@@ -8,6 +8,9 @@
     <Filter Include="Logger">
       <UniqueIdentifier>{4256a0c5-0be0-46c6-bcfd-39cc44623b4f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{388d20da-933a-48cc-8e4f-908d3ebd8629}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -31,6 +34,22 @@
       <Filter>Logger</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.h" />
+    <ClInclude Include="Network\NetworkServer.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\SocketOverlappedContext.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\SocketHandler.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkPackage.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\PackageStore.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockingQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -53,5 +72,21 @@
     <ClCompile Include="Logger\LogMessageContext.cpp">
       <Filter>Logger</Filter>
     </ClCompile>
+    <ClCompile Include="Network\NetworkServer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\SocketOverlappedContext.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\SocketHandler.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\NetworkPackage.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\PackageStore.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="BlockingQueue.cpp" />
   </ItemGroup>
 </Project>

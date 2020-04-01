@@ -8,7 +8,7 @@
 #include <Singleton.h>
 class Logger {
 private:
-	std::shared_ptr<LogMessageProcessor> _engine = Singleton<LogMessageProcessor>();
+	LogMessageProcessor &_engine = Singleton<LogMessageProcessor>();
 	std::string ThreadId();
 	std::string Now();
 protected:

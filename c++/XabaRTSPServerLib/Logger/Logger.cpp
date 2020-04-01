@@ -6,15 +6,15 @@
 #include <iomanip>
 #include <functional>
 void Logger::LogWarning(const std::string& message){
-	_engine->AddMessage({ message, std::nullopt, Now(), ThreadId() }, std::bind(&Logger::LogWarningCore, this, std::placeholders::_1));
+	_engine.AddMessage({ message, std::nullopt, Now(), ThreadId() }, std::bind(&Logger::LogWarningCore, this, std::placeholders::_1));
 }
 
 void Logger::LogInfo(const std::string& message){
-	_engine->AddMessage({ message, std::nullopt, Now(), ThreadId() }, std::bind(&Logger::LogInfoCore, this, std::placeholders::_1));
+	_engine.AddMessage({ message, std::nullopt, Now(), ThreadId() }, std::bind(&Logger::LogInfoCore, this, std::placeholders::_1));
 }
 
 void Logger::LogError(const std::exception& exception, const std::string& message){
-	_engine->AddMessage({ message, exception, Now(), ThreadId() }, std::bind(&Logger::LogErrorCore, this, std::placeholders::_1));
+	_engine.AddMessage({ message, exception, Now(), ThreadId() }, std::bind(&Logger::LogErrorCore, this, std::placeholders::_1));
 }
 
 std::string Logger::ThreadId()
