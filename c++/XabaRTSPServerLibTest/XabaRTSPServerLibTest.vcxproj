@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AggregateLoggerTest.cpp" />
+    <ClCompile Include="BlockingQueueTest.cpp" />
     <ClCompile Include="ConsoleLoggerTest.cpp" />
     <ClCompile Include="LoggerFactoryTest.cpp" />
     <ClCompile Include="pch.cpp">

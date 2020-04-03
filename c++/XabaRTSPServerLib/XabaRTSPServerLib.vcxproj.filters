@@ -11,6 +11,9 @@
     <Filter Include="Network">
       <UniqueIdentifier>{388d20da-933a-48cc-8e4f-908d3ebd8629}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MessageProcessors">
+      <UniqueIdentifier>{90cb0f76-d88c-40bf-bf4b-4f66d2e80834}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -46,10 +49,10 @@
     <ClInclude Include="Network\NetworkPackage.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="Network\PackageStore.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="BlockingQueue.h" />
+    <ClInclude Include="MessageProcessors\MessageProcessor.h">
+      <Filter>MessageProcessors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -84,9 +87,9 @@
     <ClCompile Include="Network\NetworkPackage.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="Network\PackageStore.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="BlockingQueue.cpp" />
+    <ClCompile Include="MessageProcessors\MessageProcessor.cpp">
+      <Filter>MessageProcessors</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

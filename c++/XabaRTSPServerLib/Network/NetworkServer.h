@@ -6,11 +6,12 @@
 #include <atomic>
 #include <thread>
 #include <Singleton.h>
-#include "PackageStore.h"
+#include "BlockingQueue.h"
 #include "SocketHandler.h"
+#include "NetworkPackage.h"
 class NetworkServer {
 private:
-    PackageStore &_queue  = Singleton<PackageStore>();
+    BlockingQueue<NetworkPackage>& _queue = Singleton<BlockingQueue<NetworkPackage>>();
     std::atomic_bool _finish;
     HANDLE _completionPort { NULL };
     std::vector<std::thread> _workers;

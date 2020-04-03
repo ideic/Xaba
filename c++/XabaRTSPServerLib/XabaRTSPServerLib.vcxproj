@@ -167,9 +167,9 @@
     <ClInclude Include="Logger\LogMessageProcessor.h" />
     <ClInclude Include="Logger\LoggerFactory.h" />
     <ClInclude Include="Logger\LogMessageContext.h" />
+    <ClInclude Include="MessageProcessors\MessageProcessor.h" />
     <ClInclude Include="Network\NetworkPackage.h" />
     <ClInclude Include="Network\NetworkServer.h" />
-    <ClInclude Include="Network\PackageStore.h" />
     <ClInclude Include="Network\SocketHandler.h" />
     <ClInclude Include="Network\SocketOverlappedContext.h" />
     <ClInclude Include="pch.h" />
@@ -183,9 +183,9 @@
     <ClCompile Include="Logger\LogMessageContext.cpp" />
     <ClCompile Include="Logger\LogMessageProcessor.cpp" />
     <ClCompile Include="Logger\LoggerFactory.cpp" />
+    <ClCompile Include="MessageProcessors\MessageProcessor.cpp" />
     <ClCompile Include="Network\NetworkPackage.cpp" />
     <ClCompile Include="Network\NetworkServer.cpp" />
-    <ClCompile Include="Network\PackageStore.cpp" />
     <ClCompile Include="Network\SocketHandler.cpp" />
     <ClCompile Include="Network\SocketOverlappedContext.cpp" />
     <ClCompile Include="pch.cpp">

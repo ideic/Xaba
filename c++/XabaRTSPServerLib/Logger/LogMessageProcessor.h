@@ -7,13 +7,13 @@
 #include <string>
 #include "LogMessageContext.h"
 #include <thread>
+#include "BlockingQueue.h"
+
+using messageType = std::pair<LogMessageContext, std::function<void(const LogMessageContext&)>>;
 class LogMessageProcessor
 {
 private:
-	std::list<std::tuple<
-		LogMessageContext,
-		std::function<void(const LogMessageContext &)>
-		>> _messages;
+	BlockingQueue<messageType> _messages ;
 	void Worker();
 	std::atomic_bool _finished{false};
 	std::thread _worker;
