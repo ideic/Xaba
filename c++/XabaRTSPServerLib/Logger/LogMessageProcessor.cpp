@@ -23,8 +23,8 @@ void LogMessageProcessor::AddMessage(const LogMessageContext& context, std::func
 
 void LogMessageProcessor::Stop()
 {
+    _finished = true;
     _messages.terminate();
-	_finished = true;
 }
 
 LogMessageProcessor::~LogMessageProcessor(){
