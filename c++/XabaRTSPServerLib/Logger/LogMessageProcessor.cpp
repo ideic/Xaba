@@ -7,7 +7,7 @@ void LogMessageProcessor::Worker()
 {
 	while (!_finished)
 	{
-		auto [context,  func] = _messages.pop();	
+		auto [context,  func] = _messages.Pop();	
 		if (_finished)  continue;
 		func(context);
 	}
@@ -18,20 +18,20 @@ LogMessageProcessor::LogMessageProcessor() : _worker(&LogMessageProcessor::Worke
 
 void LogMessageProcessor::AddMessage(const LogMessageContext& context, std::function<void(const LogMessageContext&)> func)
 {
-    _messages.push(std::make_pair(context, func));
+    _messages.Push(std::make_pair(context, func));
 }
 
 void LogMessageProcessor::Stop()
 {
     _finished = true;
-    _messages.terminate();
+    _messages.Terminate();
+    if (_worker.joinable()) {
+        _worker.join();
+    }
 }
 
 LogMessageProcessor::~LogMessageProcessor(){
 	Stop();
-	if (_worker.joinable()) {
-		_worker.join();
-	}
 }
 
 

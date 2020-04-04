@@ -150,5 +150,5 @@ void NetworkServer::SaveData(const WSABUF &buffer, const DWORD receivedBytes,
 
   packet.rxTimeSec = std::chrono::system_clock::now();
 
-  _queue.push(packet);
+  _queue.Push(packet);
 }

@@ -7,7 +7,8 @@ void MessageProcessor::Worker(){
    
     while (!_finished) {
         std::vector<std::future<void>> asyncResult; 
-        auto pckg = _queue.pop();
+        auto pckg = _queue.Pop();
+        if (_finished) continue;
         for(auto[id,  func] : _subscribers){
             asyncResult.push_back( std::async(std::launch::async, func, pckg));
         }
@@ -32,11 +33,14 @@ void MessageProcessor::Start(uint8_t numberOfThreads)
 
 void MessageProcessor::Stop(){
     _finished = true;
+    _queue.Terminate();
     LOGGER->LogInfo("MessageProcessor Stops Workers");
-
     for (auto& worker : _workers) {
-        worker.join();
+        if (worker.joinable())
+            worker.join();
     };
+
+    _workers.clear();
 }
 
 int MessageProcessor::Subscribe(std::function<void(const NetworkPackage&)> function){
@@ -52,4 +56,8 @@ void MessageProcessor::UnSubscribe(int id)
         return pid == id;
     });
 
+}
+
+MessageProcessor::~MessageProcessor(){
+    Stop();
 }

@@ -7,8 +7,8 @@
 using namespace std::chrono_literals;
 TEST(BlockingQueueTest, PushAndPopWorks) {
     BlockingQueue<int> q;
-    q.push(5);
-    auto result = q.pop();
+    q.Push(5);
+    auto result = q.Pop();
     EXPECT_EQ(result, 5);
 }
 
@@ -17,10 +17,10 @@ TEST(BlockingQueueTest, PopBlocks) {
 
     auto fut = std::async(std::launch::async, [&q]() { 
         std::this_thread::sleep_for(200ms);
-        q.push(5); 
+        q.Push(5); 
     });
     auto now = std::chrono::system_clock::now();
-    q.pop();
+    q.Pop();
     auto now2 = std::chrono::system_clock::now();
     fut.get();
     EXPECT_GT(std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now).count(), 150);
@@ -47,13 +47,13 @@ TEST(BlockingQueueTest, LoadTest) {
                 int64_t id = i * (int64_t)250'000 + j;
                 std::copy_n((uint8_t*)&id, sizeof(id), obj.buffer.data());
 
-                q.push(obj);
+                q.Push(obj);
             }
         });
 
         readers[i] = std::thread([&q, &sum, &reads]() {
             while (reads > 0) {
-                auto obj = q.pop();
+                auto obj = q.Pop();
                 if (reads < 1) continue;
                 reads--;
                 int64_t id { 0 };
@@ -68,7 +68,7 @@ TEST(BlockingQueueTest, LoadTest) {
     while (reads > 0) {
         std::this_thread::sleep_for(100ms);
     }
-    q.terminate();
+    q.Terminate();
     for (int i = 0; i < 4; i++) {
         readers[i].join();
     }

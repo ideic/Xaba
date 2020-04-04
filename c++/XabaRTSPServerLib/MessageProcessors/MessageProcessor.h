@@ -18,4 +18,6 @@ public:
     void Stop();
     int Subscribe(std::function<void(const NetworkPackage&)> function);
     void UnSubscribe(int id);
+    MessageProcessor() = default;
+    ~MessageProcessor();
 };
