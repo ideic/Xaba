@@ -16,16 +16,25 @@ TEST(MessageProcessorTest, CallsSubscribedMethods) {
     });
 
     mp.Start(1);
-
+    auto rxTimeSec = std::chrono::system_clock::now();
+   
     NetworkPackage newPackage;
     newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
     newPackage.dstIp = "127.0.0.1";
     newPackage.dstPort = 80;
-    newPackage.rxTimeSec = std::chrono::system_clock::now();
+    newPackage.rxTimeSec = rxTimeSec;
     newPackage.srcIp = "192.168.0.1";
     newPackage.srcPort = 100;
 
-    queue.Push(newPackage);
+    queue.Push(std::move(newPackage));
+
+    newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
+    newPackage.dstIp = "127.0.0.1";
+    newPackage.dstPort = 80;
+    newPackage.rxTimeSec = rxTimeSec;
+    newPackage.srcIp = "192.168.0.1";
+    newPackage.srcPort = 100;
+
 
     uint8_t tries = 0;
     while (tries < 10 && givenPckg.buffer.empty()) {
@@ -60,15 +69,24 @@ TEST(MessageProcessorTest, CallsAllSubscribedMethods)
 
     mp.Start(1);
 
+    auto rxTimeSec = std::chrono::system_clock::now();
+ 
     NetworkPackage newPackage;
     newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
     newPackage.dstIp = "127.0.0.1";
     newPackage.dstPort = 80;
-    newPackage.rxTimeSec = std::chrono::system_clock::now();
+    newPackage.rxTimeSec = rxTimeSec;
     newPackage.srcIp = "192.168.0.1";
     newPackage.srcPort = 100;
 
-    queue.Push(newPackage);
+    queue.Push(std::move(newPackage));
+
+    newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
+    newPackage.dstIp = "127.0.0.1";
+    newPackage.dstPort = 80;
+    newPackage.rxTimeSec = rxTimeSec;
+    newPackage.srcIp = "192.168.0.1";
+    newPackage.srcPort = 100;
 
     uint8_t tries = 0;
     while (tries < 10 && (givenPckg.buffer.empty() || givenPckg2.buffer.empty())) {

@@ -10,7 +10,7 @@ class BlockingQueue {
     std::atomic_bool terminated {false};
 
 public:
-    void Push(VALUE_TYPE value);
+    void Push(VALUE_TYPE&& value);
     VALUE_TYPE Pop();
 
     void Terminate();
@@ -19,14 +19,14 @@ public:
 };
 
 template <typename VALUE_TYPE>
-void BlockingQueue<VALUE_TYPE>::Push(VALUE_TYPE value)
+void BlockingQueue<VALUE_TYPE>::Push(VALUE_TYPE&& value)
 {
     if (terminated) {
         throw std::logic_error("BlockingQueue<VALUE_TYPE>::push(VALUE_TYPE&& value) was called in <terminated> state!");
     }
     {
         std::unique_lock<std::mutex> lock(mtx);
-        items.push(value);
+        items.push(std::move(value));
     }
     cv.notify_one();
 }
@@ -37,12 +37,11 @@ VALUE_TYPE BlockingQueue<VALUE_TYPE>::Pop()
     std::unique_lock<std::mutex> lock(mtx);
     cv.wait(lock, [this] { return (!items.empty() || terminated); });
 
-    if (!items.empty()) {
-        VALUE_TYPE result = items.front();
-        items.pop();
-        return result;
-    }
-    return VALUE_TYPE {};
+    if (terminated) return VALUE_TYPE {};
+
+    VALUE_TYPE result = std::move(items.front());
+    items.pop();
+    return result;
 }
 
 template <typename VALUE_TYPE>

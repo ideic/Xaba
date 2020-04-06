@@ -47,7 +47,7 @@ TEST(BlockingQueueTest, LoadTest) {
                 int64_t id = i * (int64_t)250'000 + j;
                 std::copy_n((uint8_t*)&id, sizeof(id), obj.buffer.data());
 
-                q.Push(obj);
+                q.Push(std::move(obj));
             }
         });
 
