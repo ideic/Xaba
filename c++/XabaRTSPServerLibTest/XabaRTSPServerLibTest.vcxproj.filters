@@ -18,11 +18,22 @@
     <ClCompile Include="MessageProcessorTest.cpp">
       <Filter>MessageProcessors</Filter>
     </ClCompile>
+    <ClCompile Include="..\XabaRTSPServerLib\MessageProcessors\PcapWriter.cpp" />
+    <ClCompile Include="NetworkServerTest.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkTestClient.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="TestLogger.h">
       <Filter>Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\XabaRTSPServerLib\MessageProcessors\PcapWriter.h" />
+    <ClInclude Include="NetworkTestClient.h">
+      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +45,9 @@
     </Filter>
     <Filter Include="MessageProcessors">
       <UniqueIdentifier>{679cfe1a-e1d4-4edd-9d9e-5a6789eb1e1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{12ea6138-f8f1-4c6e-8a54-858a67f587cc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

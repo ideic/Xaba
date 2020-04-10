@@ -6,69 +6,125 @@
 #include "SocketOverlappedContext.h"
 #include "SocketHandler.h"
 #include "NetworkPackage.h"
-
+#include <mswsock.h>
 void NetworkServer::StartWorkers(uint8_t numberOfThreads) {
-  for (int i = 0; i < numberOfThreads; ++i) {
-    _workers.emplace_back([&]() { Worker(); });
-  }
-}
-
-void NetworkServer::Worker() {
-  while (!_finish) {
-
-    DWORD numberOfBytes = 0;
-    uint64_t completionKey = 0;
-    LPOVERLAPPED ctx = 0;
-
-    auto ioSucceeds = GetQueuedCompletionStatus(_completionPort, 
-                                                &numberOfBytes,
-                                                &completionKey, 
-                                                &ctx,
-                                                1000 //  dwMilliseconds
-    );
-
-    if (ioSucceeds) {
-      if (&numberOfBytes > 0) {
-
-        auto overlappedContext = (SocketOverlappedContext *)ctx;
-
-        SaveData(overlappedContext->Buffer, numberOfBytes,
-                 overlappedContext->SrcIp, 
-                 overlappedContext->DstIp, overlappedContext->DstPort);
-
-        overlappedContext->ResetBuffer();
-
-        int iresult = WSARecvFrom(
-            overlappedContext->Socket, &overlappedContext->Buffer, 1,
-            &overlappedContext->ReceivedBytes, &overlappedContext->Flags,
-            (sockaddr *)&overlappedContext->SrcIp,
-            &overlappedContext->FromLength, overlappedContext, NULL);
-       
-        if (iresult != 0) {
-          iresult = WSAGetLastError();
-          if (iresult != WSA_IO_PENDING) {
-            LOGGER->LogWarning("RecordingServer IOCP 2nd WSARecvFrom init failed with Code:" + iresult);
-            // socket closed;
-            iresult = 0;
-          }
-        }
-      } else {
-        LOGGER->LogWarning("RecordingServer Number of received bytes 0");
-      }
-    } else {
-      auto iResult = WSAGetLastError();
-
-      if (iResult != WAIT_TIMEOUT) {
-        LOGGER->LogWarning("RecordingServer IOCP GetQueuedCompletionStatus failed with Code:" + iResult);
-        // Init Receive ?
-      }
+    for (int i = 0; i < numberOfThreads; ++i) {
+        _workers.emplace_back([&]() { Worker(); });
     }
-  }
+}
+//std::shared_ptr<SocketOverlappedContext> Ctx;
+void NetworkServer::Worker() {
+    while (!_finish) {
+
+        DWORD numberOfBytes = 0;
+        uint64_t completionKey = 0;
+        LPOVERLAPPED ctx = 0;
+
+        auto ioSucceeds = GetQueuedCompletionStatus(_completionPort,
+            &numberOfBytes,
+            &completionKey,
+            &ctx,
+            5'000 //  dwMilliseconds
+        );
+
+        if (ioSucceeds) {
+
+            auto overlappedContext = (SocketOverlappedContext*)ctx;
+            switch (overlappedContext->State) {
+                case OIOMode::Accept: {
+                    auto iResult = setsockopt(overlappedContext->AcceptSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)&overlappedContext->ListenSocket, sizeof(overlappedContext->ListenSocket));
+                    if (iResult != 0) {
+                        iResult = WSAGetLastError();
+                        throw std::runtime_error("Cannot setsockopt. Error:" + iResult);
+                    }
+
+                    if (numberOfBytes > 0) {
+                        SaveData(overlappedContext->Buffer, numberOfBytes,
+                            overlappedContext->SrcIp,
+                            overlappedContext->DstIp, overlappedContext->DstPort);
+                        overlappedContext->ReceivedBytes = 0;
+                    }
+                    
+                    overlappedContext->State = OIOMode::Read;
+
+                    int iresult = WSARecvFrom(
+                        overlappedContext->AcceptSocket, &overlappedContext->Buffer, 1,
+                        &overlappedContext->ReceivedBytes, &overlappedContext->Flags,
+                        (sockaddr*)&overlappedContext->SrcIp,
+                        &overlappedContext->SrcIpLength, overlappedContext, NULL);
+
+                    if (iresult != 0) {
+                        iresult = WSAGetLastError();
+                        if (iresult != WSA_IO_PENDING) {
+                            LOGGER->LogWarning("NetworkServer IOCP 2nd WSARecvFrom init failed with Code:" + iresult);
+                            // socket closed;
+                            iresult = 0;
+                        }
+                    }
+
+                    try {
+                        auto acceptsocket = std::make_shared<SocketHandler>();
+                        acceptsocket->CreateAcceptSocket(overlappedContext, _completionPort);
+
+                        _openPorts.push_back(acceptsocket);
+                    }
+                    catch (const std::exception& e) {
+                        LOGGER->LogError(e, "Create socker error on host:" + overlappedContext->DstIp + "port:" + std::to_string(overlappedContext->DstPort));
+                        continue;
+                    }
+
+                    break;
+
+                }
+                case OIOMode::Read: {
+                    if (numberOfBytes == 0) continue;
+                    SaveData(overlappedContext->Buffer, numberOfBytes,
+                        overlappedContext->SrcIp,
+                        overlappedContext->DstIp, overlappedContext->DstPort);
+
+                    int iresult = WSARecvFrom(
+                        overlappedContext->AcceptSocket, &overlappedContext->Buffer, 1,
+                        &overlappedContext->ReceivedBytes, &overlappedContext->Flags,
+                        (sockaddr*)&overlappedContext->SrcIp,
+                        &overlappedContext->SrcIpLength, overlappedContext, NULL);
+
+                    if (iresult != 0) {
+                        iresult = WSAGetLastError();
+                        if (iresult != WSA_IO_PENDING) {
+                            LOGGER->LogWarning("NetworkServer IOCP 2nd WSARecvFrom init failed with Code:" + iresult);
+                            // socket closed;
+                            iresult = 0;
+                        }
+                    }
+
+                }
+            }
+
+        }
+        else {
+            auto iResult = WSAGetLastError();
+
+            if (iResult != WAIT_TIMEOUT) {
+                LOGGER->LogWarning("NetworkServer IOCP GetQueuedCompletionStatus failed with Code:" + iResult);
+                // Init Receive ?
+            }
+        }
+    }
+    _terminated = true;
 }
 
 void NetworkServer::StartServer(std::string_view host,
                                 const std::vector<int> &ports,
                                 uint8_t numberOfThreads) {
+    _terminated = false;
+    WSADATA wsaData;
+    int iResult;
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        throw std::runtime_error("WSAStartup failed with error: " + std::to_string(iResult));
+    }
+
     _finish = false;
 
   _completionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 0);
@@ -76,60 +132,54 @@ void NetworkServer::StartServer(std::string_view host,
   if (!_completionPort) {
     throw std::runtime_error("IO Completion port create failed with error: " +  GetLastError());
   }
-
-  LOGGER->LogInfo("Start RecordingServer Worker threads:" + std::to_string(numberOfThreads));
-
-  StartWorkers(numberOfThreads);
-
+  
   LOGGER->LogInfo("Start Listening");
 
   std::for_each(ports.begin(), ports.end(),[this, &host](const int port) { CreatePort(host, port); });
+
+  LOGGER->LogInfo("Start NetworkServer Worker threads:" + std::to_string(numberOfThreads));
+
+  StartWorkers(numberOfThreads);
 }
 
 void NetworkServer::CreatePort(std::string_view host, int port)
 {
+    try {
+        std::shared_ptr<SocketHandler> listensocket = std::make_shared<SocketHandler>();
+        listensocket->CreateListenSocket(host, port, _completionPort);
 
-  std::shared_ptr<SocketHandler> socket = std::make_shared<SocketHandler>();
+        _openPorts.push_back(listensocket);
 
-  try {
-    socket->CreateSocket(host, port, _completionPort);
+        auto acceptsocket = std::make_shared<SocketHandler>();
+        acceptsocket->CreateAcceptSocket(listensocket->Ctx.get(), _completionPort);
 
-    _openPorts.push_back(socket);
-  } catch (const std::exception &e) {
-    LOGGER->LogError(e, "Create socker error on host:" + std::string(host) + "port:" + std::to_string(port));
-    return;
-  }
-
-  auto &ctx = socket->Ctx;
-  ctx->ResetBuffer();
-
-  int iresult = WSARecvFrom(ctx->Socket, &ctx->Buffer, 1, &ctx->ReceivedBytes,
-                            &ctx->Flags, (sockaddr *)&ctx->SrcIp,
-                            &ctx->FromLength, ctx.get(), NULL);
-
-  if (iresult != 0) {
-    iresult = WSAGetLastError();
-    if (iresult != WSA_IO_PENDING) {
-      LOGGER->LogWarning("RecordingServer IOCP 1st WSARecvFrom init failed with Code:" + iresult);
-      // socket closed;
-      iresult = 0;
+        _openPorts.push_back(acceptsocket);
     }
-  }
+    catch (const std::exception& e) {
+        LOGGER->LogError(e, "Create socker error on host:" + std::string(host) + "port:" + std::to_string(port));
+        return;
+    }
 }
 
 void NetworkServer::StopServer() {
   _finish = true;
-  LOGGER->LogInfo("RecordingServer Stop Workers");
+  LOGGER->LogInfo("NetworkServer Stop Workers");
 
   for (auto &worker : _workers) {
     worker.join();
   };
 
-  LOGGER->LogInfo("RecordingServer Clear OpenPorts");
+  LOGGER->LogInfo("NetworkServer Clear OpenPorts");
   _openPorts.clear();
 
-  LOGGER->LogInfo("RecordingServer Clear Workers");
+  LOGGER->LogInfo("NetworkServer Clear Workers");
   _workers.clear();
+
+  WSACleanup();
+}
+
+bool NetworkServer::Stopped(){
+    return _terminated;
 }
 
 

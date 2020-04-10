@@ -13,6 +13,7 @@ class NetworkServer {
 private:
     BlockingQueue<NetworkPackage>& _queue = Singleton<BlockingQueue<NetworkPackage>>();
     std::atomic_bool _finish;
+    std::atomic_bool _terminated;
     HANDLE _completionPort { NULL };
     std::vector<std::thread> _workers;
     std::vector<std::shared_ptr<SocketHandler>> _openPorts;
@@ -27,5 +28,7 @@ private:
 public:
     void StartServer(std::string_view host, const std::vector<int>& ports, uint8_t numberOfThreads);
     void StopServer();
+
+    bool Stopped();
 };
 

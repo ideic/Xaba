@@ -5,7 +5,7 @@
 #include "SocketOverlappedContext.h"
 class SocketHandler {
  public:
-  void CreateSocket(std::string_view host, int16_t portNumber, HANDLE completionPort);
-
+  void CreateListenSocket(std::string_view host, int16_t portNumber, HANDLE &completionPort);
+  void CreateAcceptSocket(SocketOverlappedContext* Ctx, HANDLE& completionPort);
   std::shared_ptr<SocketOverlappedContext> Ctx;
 };

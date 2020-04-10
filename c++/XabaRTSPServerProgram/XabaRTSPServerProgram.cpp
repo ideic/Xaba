@@ -5,6 +5,7 @@
 #include "InputParser.h"
 #include <Logger\LoggerFactory.h>
 #include <Network\NetworkServer.h>
+#include <MessageProcessors\MessageProcessor.h>
 int main(int argc, char* argv[])
 {
 	for (int i = 0; i < argc; i++)
@@ -19,7 +20,8 @@ int main(int argc, char* argv[])
 	}
 
 
-	NetworkServer recorderServer;
+	NetworkServer networkServer;
+    MessageProcessor messageProcessor;
 	//LoggerFactory::InitFileLogger(parser.getCmdOption("--logfile")); //"d:\\Idei\\POC\\RecorderGitHub\\output\\Recorder.Log");
 
 	int from = std::stoi(parser.getCmdOption("--portFrom"));
@@ -34,20 +36,19 @@ int main(int argc, char* argv[])
 	//std::wstring destFolderW = converter.from_bytes(destFolder);
 
 	std::vector<int> fromTo;
-	for (auto i = from; i <= to; i++)
-	{
+	for (auto i = from; i <= to; i++){
 		fromTo.emplace_back(i);
 	}
 
-	try
-	{
-		recorderServer.StartServer(host, fromTo, threads);
+	try {
+        messageProcessor.Start(threads * 2);
+		networkServer.StartServer(host, fromTo, threads);
 		std::cin.ignore();
-		recorderServer.StopServer();
+		networkServer.StopServer();
+        messageProcessor.Stop();
 	}
-	catch (const std::exception & e)
-	{
-		LOGGER->LogError(e, "RecordingServer failed ");
+	catch (const std::exception & e){
+		LOGGER->LogError(e, "NetworkServer failed ");
 		exit(1);
 	}
 	catch (...)
@@ -55,6 +56,6 @@ int main(int argc, char* argv[])
 		LOGGER->LogError(std::exception(), "Fatal Error ");
 	}
 
-	LOGGER->LogInfo("RecordingServer stopped ");
+	LOGGER->LogInfo("NetworkServer stopped ");
 	return 0;
 }

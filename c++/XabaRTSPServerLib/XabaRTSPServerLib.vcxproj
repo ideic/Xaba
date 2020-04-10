@@ -168,6 +168,7 @@
     <ClInclude Include="Logger\LoggerFactory.h" />
     <ClInclude Include="Logger\LogMessageContext.h" />
     <ClInclude Include="MessageProcessors\MessageProcessor.h" />
+    <ClInclude Include="MessageProcessors\PcapWriter.h" />
     <ClInclude Include="Network\NetworkPackage.h" />
     <ClInclude Include="Network\NetworkServer.h" />
     <ClInclude Include="Network\SocketHandler.h" />
@@ -184,6 +185,7 @@
     <ClCompile Include="Logger\LogMessageProcessor.cpp" />
     <ClCompile Include="Logger\LoggerFactory.cpp" />
     <ClCompile Include="MessageProcessors\MessageProcessor.cpp" />
+    <ClCompile Include="MessageProcessors\PcapWriter.cpp" />
     <ClCompile Include="Network\NetworkPackage.cpp" />
     <ClCompile Include="Network\NetworkServer.cpp" />
     <ClCompile Include="Network\SocketHandler.cpp" />

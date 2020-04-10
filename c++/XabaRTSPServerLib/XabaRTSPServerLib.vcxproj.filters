@@ -53,6 +53,9 @@
     <ClInclude Include="MessageProcessors\MessageProcessor.h">
       <Filter>MessageProcessors</Filter>
     </ClInclude>
+    <ClInclude Include="MessageProcessors\PcapWriter.h">
+      <Filter>MessageProcessors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -89,6 +92,9 @@
     </ClCompile>
     <ClCompile Include="BlockingQueue.cpp" />
     <ClCompile Include="MessageProcessors\MessageProcessor.cpp">
+      <Filter>MessageProcessors</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageProcessors\PcapWriter.cpp">
       <Filter>MessageProcessors</Filter>
     </ClCompile>
   </ItemGroup>
