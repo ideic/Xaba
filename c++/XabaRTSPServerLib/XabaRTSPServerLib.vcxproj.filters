@@ -14,6 +14,9 @@
     <Filter Include="MessageProcessors">
       <UniqueIdentifier>{90cb0f76-d88c-40bf-bf4b-4f66d2e80834}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RTSP">
+      <UniqueIdentifier>{5847d747-49f7-4f30-aa89-97fe4e199521}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -56,6 +59,16 @@
     <ClInclude Include="MessageProcessors\PcapWriter.h">
       <Filter>MessageProcessors</Filter>
     </ClInclude>
+    <ClInclude Include="MessageProcessors\MessageProcessorLogger.h">
+      <Filter>MessageProcessors</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageProcessors\MessageProcessorRTSPMessage.h" />
+    <ClInclude Include="RTSP\RTSPMessageParser.h">
+      <Filter>RTSP</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSP\RTSPMessageType.h">
+      <Filter>RTSP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -96,6 +109,16 @@
     </ClCompile>
     <ClCompile Include="MessageProcessors\PcapWriter.cpp">
       <Filter>MessageProcessors</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageProcessors\MessageProcessorLogger.cpp">
+      <Filter>MessageProcessors</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageProcessors\MessageProcessorRTSPMessage.cpp" />
+    <ClCompile Include="RTSP\RTSPMessageParser.cpp">
+      <Filter>RTSP</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSP\RTSPMessageType.cpp">
+      <Filter>RTSP</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

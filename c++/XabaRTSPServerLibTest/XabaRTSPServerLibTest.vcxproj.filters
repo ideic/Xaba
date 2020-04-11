@@ -25,6 +25,9 @@
     <ClCompile Include="NetworkTestClient.cpp">
       <Filter>Network</Filter>
     </ClCompile>
+    <ClCompile Include="RTSP\RTSPMessageParserTest.cpp">
+      <Filter>RTSP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -48,6 +51,9 @@
     </Filter>
     <Filter Include="Network">
       <UniqueIdentifier>{12ea6138-f8f1-4c6e-8a54-858a67f587cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RTSP">
+      <UniqueIdentifier>{09e731b6-1d93-4074-a746-5f8b29544bbe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

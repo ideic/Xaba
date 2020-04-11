@@ -6,6 +6,7 @@
 #include <Logger\LoggerFactory.h>
 #include <Network\NetworkServer.h>
 #include <MessageProcessors\MessageProcessor.h>
+#include <MessageProcessors\MessageProcessorLogger.h>
 int main(int argc, char* argv[])
 {
 	for (int i = 0; i < argc; i++)
@@ -22,6 +23,10 @@ int main(int argc, char* argv[])
 
 	NetworkServer networkServer;
     MessageProcessor messageProcessor;
+	MessageProcessorLogger msgProcessorLogger;
+
+	messageProcessor.Subscribe(std::bind(&MessageProcessorLogger::LogNetworkPackage, msgProcessorLogger, std::placeholders::_1));
+
 	//LoggerFactory::InitFileLogger(parser.getCmdOption("--logfile")); //"d:\\Idei\\POC\\RecorderGitHub\\output\\Recorder.Log");
 
 	int from = std::stoi(parser.getCmdOption("--portFrom"));
