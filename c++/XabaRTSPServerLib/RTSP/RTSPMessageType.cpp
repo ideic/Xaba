@@ -1,8 +1,30 @@
 #include "pch.h"
 #include "RTSPMessageType.h"
 #include <sstream>
+#include <vector>
+#include <string>;
+#include <algorithm>
+
 using namespace std::string_view_literals;
 using namespace std::string_literals;
+
+std::vector<std::string> Split(std::string_view source, const std::string& delimiter) {
+	std::vector<std::string> result;
+
+	std::size_t current = 0;
+	std::size_t position = source.find_first_of(delimiter, 0);
+
+	while (position != std::string::npos)
+	{
+		result.emplace_back(source, current, position - current);
+		current = position + 1;
+		position = source.find_first_of(delimiter, current);
+	}
+
+	result.emplace_back(std::string(source), current);
+
+	return result;
+}
 
 bool RTSPMessageType::Parse(std::string_view message) {
 	if (message.find_first_of(Token()) != std::string::npos) {
@@ -20,45 +42,28 @@ uint64_t RTSPMessageType::CSeq(){
 const std::string RTSPMessageOPTIONS::Token() { return "OPTIONS"s; }
 
 void RTSPMessageOPTIONS::ParseCore(std::string_view message){
-	auto firstline = message.substr(Token().size() + 1, message.find_first_of("\r") - (Token().size()-1));
-	size_t currentPos = 0;
-	size_t nextPos = 0;
-	while (currentPos < firstline.length()) {
-		nextPos = firstline.find_first_of(" "s, currentPos+1);
-		std::string_view token;
-		if (nextPos != std::string::npos) {
-			token = firstline.substr(currentPos, nextPos - currentPos);
-		}
-		else {
-			token = firstline.substr(currentPos+1, firstline.length()-currentPos-1-2); // \r \n
-		}
+
+	auto lines = Split(message, "\r\n"s);
+	
+	auto firstline = lines.front();
+
+	auto firstLineTokens = Split(firstline, " "s);
+
+	for (auto &token : firstLineTokens) {
 		if (token._Starts_with("rtsp://"sv) || token._Starts_with("*"sv)) {
 			_url = token;
 		}
 		else if (token._Starts_with("RTSP/"sv)) {
 			_version = token;
 		}
-
-		currentPos = nextPos;
-
 	}
 
-	if (message.size() == firstline.size()) return;
-
-	currentPos = firstline.length() + Token().size() + 1;
-	while (currentPos < message.length()){
-		auto returnPos = message.find_first_of("\r", currentPos);
-		if (returnPos == std::string::npos) return;
-
-		auto nextline = message.substr(currentPos, returnPos - (currentPos));
-		if (nextline._Starts_with("CSeq"sv)) {
-			_cseq = std::stoi(std::string(nextline.substr("CSeq:"s.length(), nextline.length() - "CSeq:"s.length())));
+	std::for_each(begin(lines) + 1, end(lines), [this](const std::string& line) {
+		if (line._Starts_with("CSeq"s)) {
+			_cseq = std::stoi(std::string(line.substr("CSeq:"s.length(), line.length() - "CSeq:"s.length())));
 			return;
 		}
-		currentPos += (nextline.length() == 0 ? 1 : nextline.length());
-	}
-
-
+	});
 }
 
 const std::string& RTSPMessageOPTIONS::URL(){
