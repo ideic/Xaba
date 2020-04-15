@@ -4,37 +4,38 @@
 #include <Singleton.h>
 #include <MessageProcessors/MessageProcessor.h>
 #include <chrono>
+#include <ws2tcpip.h>
 using namespace std::chrono_literals;
 
 TEST(MessageProcessorTest, CallsSubscribedMethods) {
-    BlockingQueue<NetworkPackage>& queue = Singleton<BlockingQueue<NetworkPackage>>();
+    BlockingQueue<TCPArrivedNetworkPackage>& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
     queue.Reset();
     MessageProcessor mp;
-    NetworkPackage givenPckg {};
-    mp.Subscribe([&givenPckg](const NetworkPackage& pckg) {
+    TCPArrivedNetworkPackage givenPckg {};
+    mp.Subscribe([&givenPckg](const TCPArrivedNetworkPackage& pckg) {
         givenPckg = pckg;
     });
 
     mp.Start(1);
     auto rxTimeSec = std::chrono::system_clock::now();
    
-    NetworkPackage newPackage;
-    newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
+    TCPArrivedNetworkPackage newPackage;
+    newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
     newPackage.dstIp = "127.0.0.1";
     newPackage.dstPort = 80;
     newPackage.rxTimeSec = rxTimeSec;
-    newPackage.srcIp = "192.168.0.1";
-    newPackage.srcPort = 100;
-
+    struct sockaddr_in sa;
+    inet_pton(AF_INET, "192.168.0.1", &(sa.sin_addr));
+    sa.sin_port = 100;
+    newPackage.SetSrc(sa);
+ 
     queue.Push(std::move(newPackage));
 
-    newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
+    newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
     newPackage.dstIp = "127.0.0.1";
     newPackage.dstPort = 80;
     newPackage.rxTimeSec = rxTimeSec;
-    newPackage.srcIp = "192.168.0.1";
-    newPackage.srcPort = 100;
-
+    newPackage.SetSrc(sa);
 
     uint8_t tries = 0;
     while (tries < 10 && givenPckg.buffer.empty()) {
@@ -48,22 +49,22 @@ TEST(MessageProcessorTest, CallsSubscribedMethods) {
     EXPECT_EQ(newPackage.dstIp, givenPckg.dstIp);
     EXPECT_EQ(newPackage.dstPort, givenPckg.dstPort);
     EXPECT_EQ(newPackage.rxTimeSec, givenPckg.rxTimeSec);
-    EXPECT_EQ(newPackage.srcIp, givenPckg.srcIp);
-    EXPECT_EQ(newPackage.srcPort, givenPckg.srcPort);
+    EXPECT_EQ(newPackage.SrcIp(), givenPckg.SrcIp());
+    EXPECT_EQ(newPackage.SrcPort(), givenPckg.SrcPort());
 }
 
 TEST(MessageProcessorTest, CallsAllSubscribedMethods)
 {
-    BlockingQueue<NetworkPackage>& queue = Singleton<BlockingQueue<NetworkPackage>>();
+    BlockingQueue<TCPArrivedNetworkPackage>& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
     queue.Reset();
     MessageProcessor mp;
-    NetworkPackage givenPckg {};
-    NetworkPackage givenPckg2 {};
-    mp.Subscribe([&givenPckg](const NetworkPackage& pckg) {
+    TCPArrivedNetworkPackage givenPckg {};
+    TCPArrivedNetworkPackage givenPckg2 {};
+    mp.Subscribe([&givenPckg](const TCPArrivedNetworkPackage& pckg) {
         givenPckg = pckg;
     });
 
-    mp.Subscribe([&givenPckg2](const NetworkPackage& pckg) {
+    mp.Subscribe([&givenPckg2](const TCPArrivedNetworkPackage& pckg) {
         givenPckg2 = pckg;
     });
 
@@ -71,22 +72,23 @@ TEST(MessageProcessorTest, CallsAllSubscribedMethods)
 
     auto rxTimeSec = std::chrono::system_clock::now();
  
-    NetworkPackage newPackage;
-    newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
+    TCPArrivedNetworkPackage newPackage;
+    newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
     newPackage.dstIp = "127.0.0.1";
     newPackage.dstPort = 80;
     newPackage.rxTimeSec = rxTimeSec;
-    newPackage.srcIp = "192.168.0.1";
-    newPackage.srcPort = 100;
+    struct sockaddr_in sa;
+    inet_pton(AF_INET, "192.168.0.1", &(sa.sin_addr));
+    sa.sin_port = 100;
+    newPackage.SetSrc(sa);
 
     queue.Push(std::move(newPackage));
 
-    newPackage.buffer = std::vector<uint8_t> { 1, 2, 3, 4 };
+    newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
     newPackage.dstIp = "127.0.0.1";
     newPackage.dstPort = 80;
     newPackage.rxTimeSec = rxTimeSec;
-    newPackage.srcIp = "192.168.0.1";
-    newPackage.srcPort = 100;
+    newPackage.SetSrc(sa);
 
     uint8_t tries = 0;
     while (tries < 10 && (givenPckg.buffer.empty() || givenPckg2.buffer.empty())) {
@@ -100,13 +102,13 @@ TEST(MessageProcessorTest, CallsAllSubscribedMethods)
     EXPECT_EQ(newPackage.dstIp, givenPckg.dstIp);
     EXPECT_EQ(newPackage.dstPort, givenPckg.dstPort);
     EXPECT_EQ(newPackage.rxTimeSec, givenPckg.rxTimeSec);
-    EXPECT_EQ(newPackage.srcIp, givenPckg.srcIp);
-    EXPECT_EQ(newPackage.srcPort, givenPckg.srcPort);
+    EXPECT_EQ(newPackage.SrcIp(), givenPckg.SrcIp());
+    EXPECT_EQ(newPackage.SrcPort(), givenPckg.SrcPort());
 
     EXPECT_TRUE(std::equal(newPackage.buffer.begin(), newPackage.buffer.end(), givenPckg2.buffer.begin()));
     EXPECT_EQ(newPackage.dstIp, givenPckg2.dstIp);
     EXPECT_EQ(newPackage.dstPort, givenPckg2.dstPort);
     EXPECT_EQ(newPackage.rxTimeSec, givenPckg2.rxTimeSec);
-    EXPECT_EQ(newPackage.srcIp, givenPckg2.srcIp);
-    EXPECT_EQ(newPackage.srcPort, givenPckg2.srcPort);
+    EXPECT_EQ(newPackage.SrcIp(), givenPckg2.SrcIp());
+    EXPECT_EQ(newPackage.SrcPort(), givenPckg2.SrcPort());
 }

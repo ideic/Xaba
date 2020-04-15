@@ -62,11 +62,16 @@
     <ClInclude Include="MessageProcessors\MessageProcessorLogger.h">
       <Filter>MessageProcessors</Filter>
     </ClInclude>
-    <ClInclude Include="MessageProcessors\MessageProcessorRTSPMessage.h" />
     <ClInclude Include="RTSP\RTSPMessageParser.h">
       <Filter>RTSP</Filter>
     </ClInclude>
     <ClInclude Include="RTSP\RTSPMessageType.h">
+      <Filter>RTSP</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageProcessors\MessageProcessorRTSPMessage.h">
+      <Filter>MessageProcessors</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSP\RTSPStateMachine.h">
       <Filter>RTSP</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,11 +118,16 @@
     <ClCompile Include="MessageProcessors\MessageProcessorLogger.cpp">
       <Filter>MessageProcessors</Filter>
     </ClCompile>
-    <ClCompile Include="MessageProcessors\MessageProcessorRTSPMessage.cpp" />
     <ClCompile Include="RTSP\RTSPMessageParser.cpp">
       <Filter>RTSP</Filter>
     </ClCompile>
     <ClCompile Include="RTSP\RTSPMessageType.cpp">
+      <Filter>RTSP</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageProcessors\MessageProcessorRTSPMessage.cpp">
+      <Filter>MessageProcessors</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSP\RTSPStateMachine.cpp">
       <Filter>RTSP</Filter>
     </ClCompile>
   </ItemGroup>

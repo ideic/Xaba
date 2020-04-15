@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>;
 #include <algorithm>
-
+#include "RTSPStateMachine.h"
 using namespace std::string_view_literals;
 using namespace std::string_literals;
 
@@ -78,6 +78,10 @@ void RTSPMessageOPTIONS::ParseCore(std::string_view message){
 	
 }
 
+std::unique_ptr<RTSPStateMachine> RTSPMessageOPTIONS::Visit(std::unique_ptr<RTSPStateMachine> stateMachine){
+	return stateMachine->Option(*this);
+}
+
 void RTSPMessageSETUP::ParseCore(std::string_view message){
 	RTSPMessageType::ParseCore(message);
 	auto lines = Split(message, "\r\n");
@@ -111,6 +115,12 @@ void RTSPMessageSETUP::ParseCore(std::string_view message){
 		}
 			
 	}
+}
+
+const std::string RTSPMessageSETUP::Token() { return "SETUP"s; }
+
+std::unique_ptr<RTSPStateMachine> RTSPMessageSETUP::Visit(std::unique_ptr<RTSPStateMachine> stateMachine){
+	return stateMachine->SetUp(*this);
 }
 
 RTSPMessageSETUP::SetupTransport RTSPMessageSETUP::Transport(){

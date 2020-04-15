@@ -40,7 +40,7 @@ void PcapWriter::CreateFile(const std::string &fileName){
     pcapFile.close();
 }
 
-void PcapWriter::WritePackage(const NetworkPackage& pckg){
+void PcapWriter::WritePackage(const TCPArrivedNetworkPackage& pckg){
     //pcap header
     pcap_pkthdr packetHeader;
     packetHeader.caplen = pckg.buffer.size();

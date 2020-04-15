@@ -28,7 +28,7 @@ TEST(BlockingQueueTest, PopBlocks) {
 
 TEST(BlockingQueueTest, LoadTest) {
    
-    BlockingQueue<NetworkPackage> q;
+    BlockingQueue<TCPArrivedNetworkPackage> q;
     std::vector<std::thread> writers(4);
     std::vector<std::thread> readers(4);
     std::atomic_int64_t sum = 0;
@@ -37,8 +37,8 @@ TEST(BlockingQueueTest, LoadTest) {
     for (int i = 0; i < 4; i++) {
         writers[i] = std::thread([i,&q]() {
             for (int j = 1; j <= 250'000; j++) {
-                NetworkPackage obj;
-                obj.buffer = std::vector<uint8_t>(1500);
+                TCPArrivedNetworkPackage obj;
+                obj.buffer = std::vector<char>(1500);
                 obj.dstIp = "192.168.0.1";
                 obj.dstPort = 80;
                 obj.rxTimeSec = std::chrono::system_clock::now();

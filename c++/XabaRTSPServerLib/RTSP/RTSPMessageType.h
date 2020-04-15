@@ -1,6 +1,10 @@
 #pragma once
 #include <string>
+#include <memory>
 using namespace std::string_literals;
+
+class RTSPStateMachine;
+
 class RTSPMessageType{
 protected:
 	
@@ -16,6 +20,7 @@ public:
 	uint64_t CSeq();
 	const std::string& URL();
 	const std::string& Version();
+	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine) = 0;
 
 };
 
@@ -23,6 +28,7 @@ class RTSPMessageOPTIONS: public RTSPMessageType {
 private:
 	virtual const std::string Token()  override;
 	virtual void ParseCore(std::string_view message) override;
+	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine) override;
 public:
 
 };
@@ -31,7 +37,8 @@ class RTSPMessageSETUP : public RTSPMessageType {
 
 protected:
 	virtual void ParseCore(std::string_view message) override;
-	virtual const std::string Token()  override { return "SETUP"s; };
+	virtual const std::string Token()  override ;
+	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine) override;
 public:
 	struct SetupTransport {
 		std::string Raw;
