@@ -189,16 +189,15 @@ void NetworkServer::SaveData(const WSABUF &buffer, const DWORD receivedBytes,
   // wchar_t ip[INET_ADDRSTRLEN];
   // InetNtop(from.sin_family, &from.sin_addr, ip, INET_ADDRSTRLEN);
 
-  NetworkPackage packet;
+  TCPArrivedNetworkPackage packet;
   packet.buffer.clear();
   packet.buffer.insert(packet.buffer.end(), buffer.buf, buffer.buf + receivedBytes);
-  packet.srcIp = inet_ntoa(((sockaddr_in)srcIp).sin_addr);
-  packet.srcPort = ntohs(srcIp.sin_port);
+  packet.SetSrc(srcIp);
 
   packet.dstIp = dstIp;
   packet.dstPort = dstPort;
 
   packet.rxTimeSec = std::chrono::system_clock::now();
 
-  _queue.Push(std::move(packet));
+  _inputqueue.Push(std::move(packet));
 }

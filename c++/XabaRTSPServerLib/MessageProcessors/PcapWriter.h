@@ -6,5 +6,5 @@ private:
     std::ofstream pcapFile;
   
     void CreateFile(const std::string& fileName);
-    void WritePackage(const NetworkPackage& pckg);
+    void WritePackage(const TCPArrivedNetworkPackage& pckg);
 };

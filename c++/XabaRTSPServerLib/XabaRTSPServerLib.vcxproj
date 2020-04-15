@@ -178,6 +178,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="RTSP\RTSPMessageParser.h" />
     <ClInclude Include="RTSP\RTSPMessageType.h" />
+    <ClInclude Include="RTSP\RTSPStateMachine.h" />
     <ClInclude Include="Singleton.h" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +205,7 @@
     </ClCompile>
     <ClCompile Include="RTSP\RTSPMessageParser.cpp" />
     <ClCompile Include="RTSP\RTSPMessageType.cpp" />
+    <ClCompile Include="RTSP\RTSPStateMachine.cpp" />
     <ClCompile Include="XabaRTSPServerLib.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

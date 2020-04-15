@@ -11,7 +11,8 @@
 #include "NetworkPackage.h"
 class NetworkServer {
 private:
-    BlockingQueue<NetworkPackage>& _queue = Singleton<BlockingQueue<NetworkPackage>>();
+    BlockingQueue<TCPArrivedNetworkPackage>& _inputqueue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
+    BlockingQueue<TCPResponseNetworkPackage>& _outputqueue = Singleton<BlockingQueue<TCPResponseNetworkPackage>>();
     std::atomic_bool _finish;
     std::atomic_bool _terminated;
     HANDLE _completionPort { NULL };

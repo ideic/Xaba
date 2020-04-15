@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 using namespace std::string_literals;
 
 TEST(NetworkServerTest, ServerGetSentPackage) {
-	auto& queue = Singleton<BlockingQueue<NetworkPackage>>();
+	auto& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
 	queue.Reset();
 
 	NetworkServer server;
@@ -37,7 +37,7 @@ TEST(NetworkServerTest, ServerGetSentPackage) {
 }
 
 TEST(NetworkServerTest, ServerGetMultipleSentPackage) {
-	auto& queue = Singleton<BlockingQueue<NetworkPackage>>();
+	auto& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
 	queue.Reset();
 
 	NetworkServer server;
@@ -69,7 +69,7 @@ TEST(NetworkServerTest, ServerGetMultipleSentPackage) {
 }
 
 TEST(NetworkServerTest, ServerGetMultipleSentPackageLoadTest) {
-	auto& queue = Singleton<BlockingQueue<NetworkPackage>>();
+	auto& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
 	queue.Reset();
 	NetworkServer server;
 	server.StartServer("127.0.0.10"s, { 554 }, 2);
@@ -125,7 +125,7 @@ TEST(NetworkServerTest, ServerGetMultipleSentPackageLoadTest) {
 
 
 TEST(NetworkServerTest, ServerGetMultiplePackageFromMultipleClient) {
-	auto& queue = Singleton<BlockingQueue<NetworkPackage>>();
+	auto& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
 	queue.Reset();
 	NetworkServer server;
 	server.StartServer("127.0.0.10"s, { 554 }, 2);
@@ -212,7 +212,7 @@ TEST(NetworkServerTest, ServerGetMultiplePackageFromMultipleClient) {
 }
 
 TEST(NetworkServerTest, ServerGetMultiplePackageFromMultipleClientOneSend) {
-	auto& queue = Singleton<BlockingQueue<NetworkPackage>>();
+	auto& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
 	queue.Reset();
 	NetworkServer server;
 	server.StartServer("127.0.0.10"s, { 554 }, 1);

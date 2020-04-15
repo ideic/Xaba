@@ -43,7 +43,7 @@ void MessageProcessor::Stop(){
     _workers.clear();
 }
 
-int MessageProcessor::Subscribe(std::function<void(const NetworkPackage&)> function){
+int MessageProcessor::Subscribe(std::function<void(const TCPArrivedNetworkPackage&)> function){
     auto id = ++_subscriberId;
     _subscribers.emplace_back(id, function);
     return id;
@@ -51,7 +51,7 @@ int MessageProcessor::Subscribe(std::function<void(const NetworkPackage&)> funct
 
 void MessageProcessor::UnSubscribe(int id)
 {
-    auto item = std::remove_if(_subscribers.begin(), _subscribers.end(), [id](std::tuple<int, std::function<void(const NetworkPackage&)>> item) {
+    auto item = std::remove_if(_subscribers.begin(), _subscribers.end(), [id](std::tuple<int, std::function<void(const TCPArrivedNetworkPackage&)>> item) {
         auto& [pid, pf] = item;
         return pid == id;
     });
