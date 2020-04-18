@@ -41,7 +41,7 @@ void NetworkServer::Worker() {
                     if (numberOfBytes > 0) {
                         SaveData(overlappedContext->Buffer, numberOfBytes,
                             overlappedContext->SrcIp,
-                            overlappedContext->DstIp, overlappedContext->DstPort);
+                            overlappedContext->DstIp);
                         overlappedContext->ReceivedBytes = 0;
                     }
                     
@@ -69,7 +69,7 @@ void NetworkServer::Worker() {
                         _openPorts.push_back(acceptsocket);
                     }
                     catch (const std::exception& e) {
-                        LOGGER->LogError(e, "Create socker error on host:" + overlappedContext->DstIp + "port:" + std::to_string(overlappedContext->DstPort));
+                        LOGGER->LogError(e, "Create socker error on host:" + std::get<0>(NetworkUtility::FromInAddrToStringIpPort(overlappedContext->DstIp)) + "port:" + std::to_string(std::get<1>(NetworkUtility::FromInAddrToStringIpPort(overlappedContext->DstIp))));
                         continue;
                     }
 
@@ -80,7 +80,7 @@ void NetworkServer::Worker() {
                     if (numberOfBytes == 0) continue;
                     SaveData(overlappedContext->Buffer, numberOfBytes,
                         overlappedContext->SrcIp,
-                        overlappedContext->DstIp, overlappedContext->DstPort);
+                        overlappedContext->DstIp);
 
                     int iresult = WSARecvFrom(
                         overlappedContext->AcceptSocket, &overlappedContext->Buffer, 1,
@@ -185,17 +185,14 @@ bool NetworkServer::Stopped(){
 
 void NetworkServer::SaveData(const WSABUF &buffer, const DWORD receivedBytes,
                              const sockaddr_in &srcIp, 
-                             const std::string &dstIp, int16_t dstPort) {
-  // wchar_t ip[INET_ADDRSTRLEN];
-  // InetNtop(from.sin_family, &from.sin_addr, ip, INET_ADDRSTRLEN);
+                             const sockaddr_in &dstIp) {
 
   TCPArrivedNetworkPackage packet;
   packet.buffer.clear();
   packet.buffer.insert(packet.buffer.end(), buffer.buf, buffer.buf + receivedBytes);
   packet.SetSrc(srcIp);
 
-  packet.dstIp = dstIp;
-  packet.dstPort = dstPort;
+  packet.SetDst(dstIp);
 
   packet.rxTimeSec = std::chrono::system_clock::now();
 

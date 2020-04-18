@@ -171,6 +171,7 @@
     <ClInclude Include="MessageProcessors\MessageProcessorLogger.h" />
     <ClInclude Include="MessageProcessors\MessageProcessorRTSPMessage.h" />
     <ClInclude Include="MessageProcessors\PcapWriter.h" />
+    <ClInclude Include="Network\NetworkUtility.h" />
     <ClInclude Include="Network\NetworkPackage.h" />
     <ClInclude Include="Network\NetworkServer.h" />
     <ClInclude Include="Network\SocketHandler.h" />
@@ -193,6 +194,7 @@
     <ClCompile Include="MessageProcessors\MessageProcessorLogger.cpp" />
     <ClCompile Include="MessageProcessors\MessageProcessorRTSPMessage.cpp" />
     <ClCompile Include="MessageProcessors\PcapWriter.cpp" />
+    <ClCompile Include="Network\NetworkUtility.cpp" />
     <ClCompile Include="Network\NetworkPackage.cpp" />
     <ClCompile Include="Network\NetworkServer.cpp" />
     <ClCompile Include="Network\SocketHandler.cpp" />

@@ -5,6 +5,8 @@
 #include <chrono>
 #include <Network/NetworkPackage.h>
 using namespace std::chrono_literals;
+using namespace std::string_literals;
+
 TEST(BlockingQueueTest, PushAndPopWorks) {
     BlockingQueue<int> q;
     q.Push(5);
@@ -39,11 +41,9 @@ TEST(BlockingQueueTest, LoadTest) {
             for (int j = 1; j <= 250'000; j++) {
                 TCPArrivedNetworkPackage obj;
                 obj.buffer = std::vector<char>(1500);
-                obj.dstIp = "192.168.0.1";
-                obj.dstPort = 80;
+                obj.SetSrc(NetworkUtility::FromStringIpPortToInAddr("192.168.0.1"s, 80));
                 obj.rxTimeSec = std::chrono::system_clock::now();
-                obj.dstIp = "172.75.01.08";
-                obj.dstPort = 65535;
+                obj.SetDst(NetworkUtility::FromStringIpPortToInAddr("172.75.01.08"s, 65535));
                 int64_t id = i * (int64_t)250'000 + j;
                 std::copy_n((uint8_t*)&id, sizeof(id), obj.buffer.data());
 

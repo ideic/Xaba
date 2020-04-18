@@ -6,6 +6,7 @@
 #include <chrono>
 #include <ws2tcpip.h>
 using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 TEST(MessageProcessorTest, CallsSubscribedMethods) {
     BlockingQueue<TCPArrivedNetworkPackage>& queue = Singleton<BlockingQueue<TCPArrivedNetworkPackage>>();
@@ -21,21 +22,16 @@ TEST(MessageProcessorTest, CallsSubscribedMethods) {
    
     TCPArrivedNetworkPackage newPackage;
     newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
-    newPackage.dstIp = "127.0.0.1";
-    newPackage.dstPort = 80;
+    newPackage.SetDst(NetworkUtility::FromStringIpPortToInAddr("127.0.0.1"s, 80));
     newPackage.rxTimeSec = rxTimeSec;
-    struct sockaddr_in sa;
-    inet_pton(AF_INET, "192.168.0.1", &(sa.sin_addr));
-    sa.sin_port = 100;
-    newPackage.SetSrc(sa);
+    newPackage.SetSrc(NetworkUtility::FromStringIpPortToInAddr("192.168.0.1"s, 100));
  
     queue.Push(std::move(newPackage));
 
     newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
-    newPackage.dstIp = "127.0.0.1";
-    newPackage.dstPort = 80;
+    newPackage.SetDst(NetworkUtility::FromStringIpPortToInAddr("127.0.0.1"s, 80));
     newPackage.rxTimeSec = rxTimeSec;
-    newPackage.SetSrc(sa);
+    newPackage.SetSrc(NetworkUtility::FromStringIpPortToInAddr("192.168.0.1"s, 100));
 
     uint8_t tries = 0;
     while (tries < 10 && givenPckg.buffer.empty()) {
@@ -46,8 +42,8 @@ TEST(MessageProcessorTest, CallsSubscribedMethods) {
     mp.Stop();
 
     EXPECT_TRUE( std::equal(newPackage.buffer.begin(), newPackage.buffer.end(), givenPckg.buffer.begin()));
-    EXPECT_EQ(newPackage.dstIp, givenPckg.dstIp);
-    EXPECT_EQ(newPackage.dstPort, givenPckg.dstPort);
+    EXPECT_EQ(newPackage.DstIp(), givenPckg.DstIp());
+    EXPECT_EQ(newPackage.DstPort(), givenPckg.DstPort());
     EXPECT_EQ(newPackage.rxTimeSec, givenPckg.rxTimeSec);
     EXPECT_EQ(newPackage.SrcIp(), givenPckg.SrcIp());
     EXPECT_EQ(newPackage.SrcPort(), givenPckg.SrcPort());
@@ -74,21 +70,17 @@ TEST(MessageProcessorTest, CallsAllSubscribedMethods)
  
     TCPArrivedNetworkPackage newPackage;
     newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
-    newPackage.dstIp = "127.0.0.1";
-    newPackage.dstPort = 80;
+    newPackage.SetDst(NetworkUtility::FromStringIpPortToInAddr("127.0.0.1"s, 80));
     newPackage.rxTimeSec = rxTimeSec;
-    struct sockaddr_in sa;
-    inet_pton(AF_INET, "192.168.0.1", &(sa.sin_addr));
-    sa.sin_port = 100;
-    newPackage.SetSrc(sa);
+    newPackage.SetSrc(NetworkUtility::FromStringIpPortToInAddr("192.168.0.1"s, 100));
+
 
     queue.Push(std::move(newPackage));
 
     newPackage.buffer = std::vector<char> { 1, 2, 3, 4 };
-    newPackage.dstIp = "127.0.0.1";
-    newPackage.dstPort = 80;
+    newPackage.SetDst(NetworkUtility::FromStringIpPortToInAddr("127.0.0.1"s, 80));
     newPackage.rxTimeSec = rxTimeSec;
-    newPackage.SetSrc(sa);
+    newPackage.SetSrc(NetworkUtility::FromStringIpPortToInAddr("192.168.0.1"s, 100));
 
     uint8_t tries = 0;
     while (tries < 10 && (givenPckg.buffer.empty() || givenPckg2.buffer.empty())) {
@@ -99,15 +91,15 @@ TEST(MessageProcessorTest, CallsAllSubscribedMethods)
     mp.Stop();
 
     EXPECT_TRUE(std::equal(newPackage.buffer.begin(), newPackage.buffer.end(), givenPckg.buffer.begin()));
-    EXPECT_EQ(newPackage.dstIp, givenPckg.dstIp);
-    EXPECT_EQ(newPackage.dstPort, givenPckg.dstPort);
+    EXPECT_EQ(newPackage.DstIp(), givenPckg.DstIp());
+    EXPECT_EQ(newPackage.DstPort(), givenPckg.DstPort());
     EXPECT_EQ(newPackage.rxTimeSec, givenPckg.rxTimeSec);
     EXPECT_EQ(newPackage.SrcIp(), givenPckg.SrcIp());
     EXPECT_EQ(newPackage.SrcPort(), givenPckg.SrcPort());
 
     EXPECT_TRUE(std::equal(newPackage.buffer.begin(), newPackage.buffer.end(), givenPckg2.buffer.begin()));
-    EXPECT_EQ(newPackage.dstIp, givenPckg2.dstIp);
-    EXPECT_EQ(newPackage.dstPort, givenPckg2.dstPort);
+    EXPECT_EQ(newPackage.DstIp(), givenPckg2.DstIp());
+    EXPECT_EQ(newPackage.DstPort(), givenPckg2.DstPort());
     EXPECT_EQ(newPackage.rxTimeSec, givenPckg2.rxTimeSec);
     EXPECT_EQ(newPackage.SrcIp(), givenPckg2.SrcIp());
     EXPECT_EQ(newPackage.SrcPort(), givenPckg2.SrcPort());

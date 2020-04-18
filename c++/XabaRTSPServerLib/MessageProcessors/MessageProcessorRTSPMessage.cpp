@@ -4,13 +4,13 @@
 #include <memory>
 #include <variant>
 #include <atomic>
-
+#include  <typeinfo>
 void MessageProcessorRTSPMessage::CreateStateMachineIfItIsNotExists(const uint64_t key){
 
 	std::atomic_bool found{ false };
 	{
 		std::shared_lock l(_readerWriterLock);
-		found = _stateMachines.find(key) == end(_stateMachines);
+		found = _stateMachines.find(key) != end(_stateMachines);
 	}
 	if (!found) {
 		std::unique_lock l(_readerWriterLock);
@@ -27,9 +27,11 @@ uint64_t MessageProcessorRTSPMessage::GetKey(const TCPArrivedNetworkPackage& pck
 	uint64_t key{ 0 };
 	const auto& src = pckg.GetSrc();
 
-	std::copy_n((uint8_t*)&(src.sin_addr), 4, &key);
+	const uint8_t* from = (const uint8_t*)&(src.sin_addr);
+	const uint8_t* end = from + 4;
+	std::copy(from, end, (uint8_t*)&key);
 	key = key << 32;
-	std::copy_n((uint8_t*)&(src.sin_port), sizeof(src.sin_port), &key);
+	std::copy_n((uint8_t*)&(src.sin_port), sizeof(src.sin_port), (uint8_t*)&key);
 	return key;
 }
 
@@ -45,11 +47,12 @@ void MessageProcessorRTSPMessage::ProcessNetworkPackage(const TCPArrivedNetworkP
 	std::string message(begin(pckg.buffer), end(pckg.buffer));
 	auto rtspMessage = parser.Parse(message);
 
-	if (typeid(rtspMessage.get()) == typeid(RTSPMessageINVALID*)) {
+	if (typeid(*rtspMessage.get()).hash_code() == typeid(RTSPMessageINVALID).hash_code()) {
 		return;
 	}
 	auto key = GetKey(pckg);
-	if (typeid(rtspMessage.get()) == typeid(RTSPMessageOPTIONS)) {
+
+	if (typeid(*rtspMessage.get()).hash_code() == typeid(RTSPMessageOPTIONS).hash_code()) {
 		CreateStateMachineIfItIsNotExists(key);
 	}
 	
@@ -58,10 +61,10 @@ void MessageProcessorRTSPMessage::ProcessNetworkPackage(const TCPArrivedNetworkP
 
 	{
 		std::unique_lock l(_readerWriterLock);
-		_stateMachines[key] = rtspMessage->Visit(std::move(stateMachine));
+		_stateMachines[key] = rtspMessage->Visit(std::move(stateMachine), pckg);
 	}
 	
-	if (typeid(rtspMessage.get()) == typeid(RTSPMessageTEARDOWN)) {
+	if (typeid(*rtspMessage.get()).hash_code() == typeid(RTSPMessageTEARDOWN).hash_code()) {
 		RemoveStateMachine(key);
 	}
 }

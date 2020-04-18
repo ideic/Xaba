@@ -28,6 +28,12 @@
     <ClCompile Include="RTSP\RTSPMessageParserTest.cpp">
       <Filter>RTSP</Filter>
     </ClCompile>
+    <ClCompile Include="RTSP\RTSPMessageProcessorTest.cpp">
+      <Filter>RTSP</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkUtilityTest.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

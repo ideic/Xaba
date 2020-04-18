@@ -1,26 +1,27 @@
 #pragma once
 #include <string>
 #include <memory>
+#include "Network/NetworkPackage.h"
 using namespace std::string_literals;
 
 class RTSPStateMachine;
 
 class RTSPMessageType{
 protected:
-	
-	virtual void ParseCore(std::string_view message);
-	virtual const std::string Token() = 0;
-protected:
 	uint64_t _cseq{ 0 };
 	std::string _url{ ""s };
 	std::string _version{ ""s };
+
+	virtual void ParseCore(std::string_view message);
+	virtual const std::string Token() = 0;
 
 public:
 	bool Parse(std::string_view message);
 	uint64_t CSeq();
 	const std::string& URL();
 	const std::string& Version();
-	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine) = 0;
+
+	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage &networkPackage) = 0;
 
 };
 
@@ -28,7 +29,7 @@ class RTSPMessageOPTIONS: public RTSPMessageType {
 private:
 	virtual const std::string Token()  override;
 	virtual void ParseCore(std::string_view message) override;
-	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine) override;
+	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage &networkPackage) override;
 public:
 
 };
@@ -38,7 +39,7 @@ class RTSPMessageSETUP : public RTSPMessageType {
 protected:
 	virtual void ParseCore(std::string_view message) override;
 	virtual const std::string Token()  override ;
-	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine) override;
+	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage) override;
 public:
 	struct SetupTransport {
 		std::string Raw;

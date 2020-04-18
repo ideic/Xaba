@@ -23,7 +23,7 @@ private:
     void Worker();
     void SaveData(const WSABUF& buffer, const DWORD receivedBytes,
         const sockaddr_in& srcIp,
-        const std::string& dstIp, int16_t dstPort);
+        const sockaddr_in& dstIp);
     void CreatePort(std::string_view host, int port);
 
 public:

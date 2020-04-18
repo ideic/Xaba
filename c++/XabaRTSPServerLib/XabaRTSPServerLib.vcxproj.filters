@@ -74,6 +74,9 @@
     <ClInclude Include="RTSP\RTSPStateMachine.h">
       <Filter>RTSP</Filter>
     </ClInclude>
+    <ClInclude Include="Network\NetworkUtility.h">
+      <Filter>Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -129,6 +132,9 @@
     </ClCompile>
     <ClCompile Include="RTSP\RTSPStateMachine.cpp">
       <Filter>RTSP</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\NetworkUtility.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

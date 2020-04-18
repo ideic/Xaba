@@ -1,17 +1,22 @@
 #pragma once
 #include "RTSPMessageType.h"
+struct RTSPStateMachineContext {
+	uint32_t Seq{ 0 };
+};
 class RTSPStateMachine{
+protected:
+	RTSPStateMachineContext _ctx;
 public:
-	virtual std::unique_ptr<RTSPStateMachine> Option(RTSPMessageOPTIONS& msg) = 0;
-	virtual std::unique_ptr<RTSPStateMachine>  SetUp(const RTSPMessageSETUP& msg) = 0;
-	virtual std::unique_ptr<RTSPStateMachine>  Play(const RTSPMessagePLAY& msg) = 0;
-
+	virtual std::unique_ptr<RTSPStateMachine> Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage) = 0;
+	virtual std::unique_ptr<RTSPStateMachine>  SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage) = 0;
+	virtual std::unique_ptr<RTSPStateMachine>  Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage) = 0;
+	void CaptureCtx(RTSPStateMachineContext &ctx);
 };
 
 class RTSPInitStateMachine : public RTSPStateMachine {
-	virtual std::unique_ptr<RTSPStateMachine> Option(RTSPMessageOPTIONS& msg) override;
-	virtual std::unique_ptr<RTSPStateMachine>  SetUp(const RTSPMessageSETUP& msg) override;
-	virtual std::unique_ptr<RTSPStateMachine>  Play(const RTSPMessagePLAY& msg) override;
+	virtual std::unique_ptr<RTSPStateMachine> Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage) override;
+	virtual std::unique_ptr<RTSPStateMachine>  SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage) override;
+	virtual std::unique_ptr<RTSPStateMachine>  Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage) override;
 };
 
 class RTSPPlayingStateMachine : public RTSPStateMachine {

@@ -3,7 +3,7 @@
 #include "ws2tcpip.h"
 #include <stdexcept>
 #include <mswsock.h>
-
+#include <Network/NetworkUtility.h>
 void SocketHandler::CreateListenSocket(std::string_view host, int16_t portNumber, HANDLE &completionPort) {
   struct addrinfo hints, *addrInfoInit;
   ZeroMemory(&hints, sizeof(hints));
@@ -63,8 +63,7 @@ void SocketHandler::CreateListenSocket(std::string_view host, int16_t portNumber
   
   Ctx->ListenSocket = listenSocket;
   Ctx->ListenIOPort = completionPort;
-  Ctx->DstPort = portNumber;
-  Ctx->DstIp = inet_ntoa(((sockaddr_in*)addrInfo->ai_addr)->sin_addr);
+  Ctx->DstIp = *((sockaddr_in*)addrInfo->ai_addr);
   Ctx->ResetBuffer();
   
 
@@ -81,8 +80,8 @@ void SocketHandler::CreateAcceptSocket(SocketOverlappedContext* pCtx, HANDLE& co
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-
-    int iResult = getaddrinfo(pCtx->DstIp.c_str(), std::to_string(pCtx->DstPort).c_str(), &hints, &addrInfoInit);
+    auto [ip, port] = NetworkUtility::FromInAddrToStringIpPort(pCtx->DstIp);
+    int iResult = getaddrinfo(ip.c_str(), std::to_string(port).c_str(), &hints, &addrInfoInit);
     if (iResult != 0) {
         throw std::runtime_error("getaddrinfo failed with error:" + std::to_string(iResult));
     }
@@ -97,7 +96,6 @@ void SocketHandler::CreateAcceptSocket(SocketOverlappedContext* pCtx, HANDLE& co
 
     Ctx->ListenSocket = pCtx->ListenSocket;
     Ctx->ListenIOPort = pCtx->ListenIOPort;
-    Ctx->DstPort = pCtx->DstPort;
     Ctx->DstIp = pCtx->DstIp;
     Ctx->ResetBuffer();
 
@@ -117,7 +115,7 @@ void SocketHandler::CreateAcceptSocket(SocketOverlappedContext* pCtx, HANDLE& co
         throw std::runtime_error("Cannot accept socket. Error:" + iResult);
     }
 
-    completionPort = CreateIoCompletionPort((HANDLE)Ctx->AcceptSocket, completionPort, Ctx->DstPort, 0);
+    completionPort = CreateIoCompletionPort((HANDLE)Ctx->AcceptSocket, completionPort, port, 0);
 
     if (completionPort == 0) {
         iResult = WSAGetLastError();

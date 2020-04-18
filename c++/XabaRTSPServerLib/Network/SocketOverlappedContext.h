@@ -33,8 +33,7 @@ class SocketOverlappedContext : public OVERLAPPED {
   HANDLE ListenIOPort{0};
   HANDLE AcceptIOPort{ 0 };
 
-  int16_t DstPort{0};
-  std::string DstIp{0};
+  sockaddr_in DstIp{0};
 
   OIOMode State;
 
