@@ -7,6 +7,7 @@
 #include <Network\NetworkServer.h>
 #include <MessageProcessors\MessageProcessor.h>
 #include <MessageProcessors\MessageProcessorLogger.h>
+#include <MessageProcessors\MessageProcessorRTSPMessage.h>
 int main(int argc, char* argv[])
 {
 	for (int i = 0; i < argc; i++)
@@ -26,6 +27,9 @@ int main(int argc, char* argv[])
 	MessageProcessorLogger msgProcessorLogger;
 
 	messageProcessor.Subscribe(std::bind(&MessageProcessorLogger::LogNetworkPackage, msgProcessorLogger, std::placeholders::_1));
+
+	MessageProcessorRTSPMessage msgProcessorrtsp;
+	messageProcessor.Subscribe(std::bind(&MessageProcessorRTSPMessage::ProcessNetworkPackage, &msgProcessorrtsp, std::placeholders::_1));
 
 	//LoggerFactory::InitFileLogger(parser.getCmdOption("--logfile")); //"d:\\Idei\\POC\\RecorderGitHub\\output\\Recorder.Log");
 
@@ -51,6 +55,7 @@ int main(int argc, char* argv[])
 		std::cin.ignore();
 		networkServer.StopServer();
         messageProcessor.Stop();
+		
 	}
 	catch (const std::exception & e){
 		LOGGER->LogError(e, "NetworkServer failed ");

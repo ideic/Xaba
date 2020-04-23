@@ -8,9 +8,10 @@ void MessageProcessor::Worker(){
     while (!_finished) {
         std::vector<std::future<void>> asyncResult; 
         auto pckg = _queue.Pop();
+        if (!pckg) _finished = true;
         if (_finished) continue;
         for(auto[id,  func] : _subscribers){
-            asyncResult.push_back( std::async(std::launch::async, func, pckg));
+            asyncResult.push_back( std::async(std::launch::async, func, pckg.value()));
         }
 
         for (auto& futResult : asyncResult) { /// other thread gets the next package
@@ -34,7 +35,6 @@ void MessageProcessor::Start(uint8_t numberOfThreads)
 void MessageProcessor::Stop(){
     _finished = true;
     _queue.Terminate();
-    LOGGER->LogInfo("MessageProcessor Stops Workers");
     for (auto& worker : _workers) {
         if (worker.joinable())
             worker.join();

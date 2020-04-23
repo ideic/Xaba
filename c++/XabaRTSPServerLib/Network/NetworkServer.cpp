@@ -10,6 +10,7 @@
 void NetworkServer::StartWorkers(uint8_t numberOfThreads) {
     for (int i = 0; i < numberOfThreads; ++i) {
         _workers.emplace_back([&]() { Worker(); });
+        _listeners.emplace_back([&]() { Listener(); });
     }
 }
 //std::shared_ptr<SocketOverlappedContext> Ctx;
@@ -41,17 +42,19 @@ void NetworkServer::Worker() {
                     if (numberOfBytes > 0) {
                         SaveData(overlappedContext->Buffer, numberOfBytes,
                             overlappedContext->SrcIp,
-                            overlappedContext->DstIp);
+                            overlappedContext->DstIp,
+                            overlappedContext->AcceptSocket
+                        );
                         overlappedContext->ReceivedBytes = 0;
                     }
                     
                     overlappedContext->State = OIOMode::Read;
 
-                    int iresult = WSARecvFrom(
+                    int iresult = WSARecv(
                         overlappedContext->AcceptSocket, &overlappedContext->Buffer, 1,
                         &overlappedContext->ReceivedBytes, &overlappedContext->Flags,
-                        (sockaddr*)&overlappedContext->SrcIp,
-                        &overlappedContext->SrcIpLength, overlappedContext, NULL);
+                     /*   (sockaddr*)&overlappedContext->SrcIp,
+                        &overlappedContext->SrcIpLength,*/ overlappedContext, NULL);
 
                     if (iresult != 0) {
                         iresult = WSAGetLastError();
@@ -65,7 +68,6 @@ void NetworkServer::Worker() {
                     try {
                         auto acceptsocket = std::make_shared<SocketHandler>();
                         acceptsocket->CreateAcceptSocket(overlappedContext, _completionPort);
-
                         _openPorts.push_back(acceptsocket);
                     }
                     catch (const std::exception& e) {
@@ -80,13 +82,15 @@ void NetworkServer::Worker() {
                     if (numberOfBytes == 0) continue;
                     SaveData(overlappedContext->Buffer, numberOfBytes,
                         overlappedContext->SrcIp,
-                        overlappedContext->DstIp);
+                        overlappedContext->DstIp,
+                        overlappedContext->AcceptSocket
+                    );
 
-                    int iresult = WSARecvFrom(
+                    int iresult = WSARecv(
                         overlappedContext->AcceptSocket, &overlappedContext->Buffer, 1,
                         &overlappedContext->ReceivedBytes, &overlappedContext->Flags,
-                        (sockaddr*)&overlappedContext->SrcIp,
-                        &overlappedContext->SrcIpLength, overlappedContext, NULL);
+                        /*(sockaddr*)&overlappedContext->SrcIp,
+                        &overlappedContext->SrcIpLength,*/ overlappedContext, NULL);
 
                     if (iresult != 0) {
                         iresult = WSAGetLastError();
@@ -96,6 +100,22 @@ void NetworkServer::Worker() {
                             iresult = 0;
                         }
                     }
+
+                }
+                case OIOMode::Send: {
+                    // int iresult = WSASend(
+                    //    overlappedContext->AcceptSocket, &overlappedContext->Buffer, 1,
+                    //    &overlappedContext->ReceivedBytes, overlappedContext->Flags,
+                    //    overlappedContext, NULL);
+
+                    //if (iresult != 0) {
+                    //    iresult = WSAGetLastError();
+                    //    if (iresult != WSA_IO_PENDING) {
+                    //        LOGGER->LogWarning("NetworkServer WSASend failed with Code:" + iresult);
+                    //        // socket closed;
+                    //        iresult = 0;
+                    //    }
+                    //}
 
                 }
             }
@@ -111,6 +131,31 @@ void NetworkServer::Worker() {
         }
     }
     _terminated = true;
+}
+
+void NetworkServer::Listener(){
+    while (!_finish) {
+        auto message = _outputqueue.Pop();
+        if (!message) _finish = true;
+        if (_finish) break;
+
+        std::shared_ptr<SocketOverlappedContext> Ctx = std::make_shared<SocketOverlappedContext>();
+        Ctx->ResetBuffer();
+        std::copy(message.value().buffer.begin(), message.value().buffer.end(), Ctx->Buffer.buf);
+        Ctx->Buffer.len = message.value().buffer.size();
+        Ctx->AcceptSocket = message.value().socket;
+        Ctx->State = OIOMode::Send;
+        _listenerCtxs.push_back(Ctx);
+        int iresult = WSASend(Ctx->AcceptSocket,  &Ctx->Buffer, 1, &Ctx->ReceivedBytes, Ctx->Flags, Ctx.get(), NULL);
+        if (iresult != 0) {
+            iresult = WSAGetLastError();
+            if (iresult != WSA_IO_PENDING) {
+                LOGGER->LogWarning("WSASend failed with Code:" + iresult);
+                // socket closed;
+                iresult = 0;
+            }
+        }
+    }
 }
 
 void NetworkServer::StartServer(std::string_view host,
@@ -165,12 +210,23 @@ void NetworkServer::StopServer() {
   _finish = true;
   LOGGER->LogInfo("NetworkServer Stop Workers");
 
+  LOGGER->LogInfo("Terminate queues");
+  _outputqueue.Terminate();
+  _inputqueue.Terminate();
+
   for (auto &worker : _workers) {
     worker.join();
   };
 
+  for (auto& worker : _listeners) {
+      worker.join();
+  };
+
   LOGGER->LogInfo("NetworkServer Clear OpenPorts");
   _openPorts.clear();
+
+  LOGGER->LogInfo("NetworkServer Clear ListenContexts");
+  _listenerCtxs.clear();
 
   LOGGER->LogInfo("NetworkServer Clear Workers");
   _workers.clear();
@@ -185,7 +241,8 @@ bool NetworkServer::Stopped(){
 
 void NetworkServer::SaveData(const WSABUF &buffer, const DWORD receivedBytes,
                              const sockaddr_in &srcIp, 
-                             const sockaddr_in &dstIp) {
+                             const sockaddr_in &dstIp,
+                             const SOCKET &acceptSocket) {
 
   TCPArrivedNetworkPackage packet;
   packet.buffer.clear();
@@ -195,6 +252,8 @@ void NetworkServer::SaveData(const WSABUF &buffer, const DWORD receivedBytes,
   packet.SetDst(dstIp);
 
   packet.rxTimeSec = std::chrono::system_clock::now();
+
+  packet.socket = acceptSocket;
 
   _inputqueue.Push(std::move(packet));
 }

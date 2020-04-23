@@ -17,13 +17,17 @@ private:
     std::atomic_bool _terminated;
     HANDLE _completionPort { NULL };
     std::vector<std::thread> _workers;
+    std::vector<std::thread> _listeners;
+    std::vector<std::shared_ptr<SocketOverlappedContext>> _listenerCtxs;
     std::vector<std::shared_ptr<SocketHandler>> _openPorts;
 
     void StartWorkers(uint8_t numberOfThreads);
     void Worker();
+    void Listener();
     void SaveData(const WSABUF& buffer, const DWORD receivedBytes,
         const sockaddr_in& srcIp,
-        const sockaddr_in& dstIp);
+        const sockaddr_in& dstIp,
+        const SOCKET& AcceptSocket);
     void CreatePort(std::string_view host, int port);
 
 public:

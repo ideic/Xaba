@@ -53,6 +53,23 @@ void NetworkTestClient::Send(std::string content){
 	}
 }
 
+std::string NetworkTestClient::Receive() {
+	WSABUF buffer;
+
+	buffer.buf = new char[1024];
+	buffer.len = 1024;
+	DWORD given{};
+	DWORD flags{};
+	auto result = WSARecv(_socket, &buffer, 1, &given, &flags, NULL, NULL);
+	if (result != 0) {
+		result = WSAGetLastError();
+		throw std::runtime_error("WSAConnect failed with error:" + std::to_string(result));
+	}
+
+	return std::string(buffer.buf, buffer.buf + given);
+}
+
+
 void NetworkTestClient::Close(){
 	closesocket(_socket);
 }

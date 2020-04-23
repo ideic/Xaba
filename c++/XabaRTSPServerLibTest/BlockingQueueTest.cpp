@@ -54,10 +54,11 @@ TEST(BlockingQueueTest, LoadTest) {
         readers[i] = std::thread([&q, &sum, &reads]() {
             while (reads > 0) {
                 auto obj = q.Pop();
+                if (!obj) break;
                 if (reads < 1) continue;
                 reads--;
                 int64_t id { 0 };
-                std::copy_n(obj.buffer.data(), sizeof(id), (uint8_t*) &id );
+                std::copy_n(obj.value().buffer.data(), sizeof(id), (uint8_t*) &id );
                 sum += id;
             }
         });

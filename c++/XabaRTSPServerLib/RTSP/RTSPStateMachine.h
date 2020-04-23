@@ -1,5 +1,7 @@
 #pragma once
 #include "RTSPMessageType.h"
+
+//TODO Context should containnstateMachine, that will be overwritten at ChangeState
 struct RTSPStateMachineContext {
 	uint32_t Seq{ 0 };
 };

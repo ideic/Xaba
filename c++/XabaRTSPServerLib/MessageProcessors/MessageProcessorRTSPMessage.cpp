@@ -14,7 +14,7 @@ void MessageProcessorRTSPMessage::CreateStateMachineIfItIsNotExists(const uint64
 	}
 	if (!found) {
 		std::unique_lock l(_readerWriterLock);
-		_stateMachines.emplace(key, new RTSPInitStateMachine()); // TODO initStateMachine
+		_stateMachines.emplace(key, new RTSPInitStateMachine());
 	}
 }
 

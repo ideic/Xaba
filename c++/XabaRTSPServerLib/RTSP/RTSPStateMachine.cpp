@@ -16,6 +16,7 @@ std::unique_ptr<RTSPStateMachine> RTSPInitStateMachine::Option(const RTSPMessage
 	responsePckg.buffer = std::vector<char>(response.begin(), response.end());
 	responsePckg.SetDst(networkPackage.GetSrc());
 	responsePckg.SetSrc(networkPackage.GetDst());
+	responsePckg.socket = networkPackage.socket;
 
 	Singleton<BlockingQueue<TCPResponseNetworkPackage>>().Push(std::move(responsePckg));
 	//return std::make_unique<RTSPInitStateMachine>(this);

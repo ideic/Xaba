@@ -19,6 +19,7 @@ private:
 public:
         std::vector<char> buffer;
         std::chrono::time_point<std::chrono::system_clock> rxTimeSec;
+        SOCKET socket;
         void SetSrc(const sockaddr_in &sourceIp) {
             _src = sourceIp;
             auto [ip, port] = NetworkUtility::FromInAddrToStringIpPort(sourceIp);

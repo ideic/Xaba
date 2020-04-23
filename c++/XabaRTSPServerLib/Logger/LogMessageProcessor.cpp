@@ -7,8 +7,13 @@ void LogMessageProcessor::Worker()
 {
 	while (!_finished)
 	{
-		auto [context,  func] = _messages.Pop();	
-		if (_finished)  continue;
+		std::optional<messageType> msg = _messages.Pop();
+		if (!msg) {
+			_finished = true;
+			break;
+		}
+		auto &[context, func] = msg.value();
+		if (_finished)  break;
 		func(context);
 	}
 }
@@ -32,6 +37,10 @@ void LogMessageProcessor::Stop()
 
 LogMessageProcessor::~LogMessageProcessor(){
 	Stop();
+}
+
+void LogMessageProcessor::Suspend(){
+	_finished = true;
 }
 
 

@@ -9,7 +9,8 @@ enum class OIOMode {
     NotSet,
     Accept,
     Read,
-    Write
+    Write,
+    Send
 };
 class SocketOverlappedContext : public OVERLAPPED {
  private:

@@ -22,5 +22,6 @@ public:
 	LogMessageProcessor();
 	void AddMessage(const LogMessageContext &context, std::function<void(const LogMessageContext&)> func);
 	~LogMessageProcessor();
+	void Suspend();
 };
 
