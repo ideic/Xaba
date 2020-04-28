@@ -32,7 +32,7 @@ namespace NetworkServerTest {
 		std::string testMessage = "TEST MESSAGE"s;
 		client.Send(testMessage);
 
-		auto package = queue.Pop().value();
+		auto package = queue.Pop();
 
 		std::vector<uint8_t> expectedMessage(begin(testMessage), end(testMessage));
 		EXPECT_TRUE(std::equal(begin(package.buffer), end(package.buffer), begin(expectedMessage)));
@@ -60,11 +60,11 @@ namespace NetworkServerTest {
 		std::string testMessage2 = "TEST MESSAGE2"s;
 		client.Send(testMessage2);
 
-		auto package = queue.Pop().value();
+		auto package = queue.Pop();
 		std::vector<uint8_t> expectedMessage(begin(testMessage), end(testMessage));
 		EXPECT_TRUE(std::equal(begin(package.buffer), end(package.buffer), begin(expectedMessage)));
 
-		package = queue.Pop().value();
+		package = queue.Pop();
 		expectedMessage = std::vector<uint8_t>(begin(testMessage2), end(testMessage2));
 		EXPECT_TRUE(std::equal(begin(package.buffer), end(package.buffer), begin(expectedMessage)));
 
@@ -95,7 +95,7 @@ namespace NetworkServerTest {
 		std::vector<std::string> givenMessages;
 		bool lastMessageArrived = false;
 		while (!lastMessageArrived) {
-			auto package = queue.Pop().value();
+			auto package = queue.Pop();
 			auto message = std::string(begin(package.buffer), end(package.buffer));
 			givenMessages.push_back(message);
 
@@ -169,7 +169,7 @@ namespace NetworkServerTest {
 		std::vector<std::string> givenMessages;
 		bool lastMessageArrived = false;
 		while (!lastMessageArrived) {
-			auto package = queue.Pop().value();
+			auto package = queue.Pop();
 			auto message = std::string(begin(package.buffer), end(package.buffer));
 			givenMessages.push_back(message);
 
@@ -252,7 +252,7 @@ namespace NetworkServerTest {
 		std::vector<std::string> givenMessages;
 
 		while (givenMessages.size() < 2 || (givenMessages.size() == 1 && givenMessages.front().size() < 12)) {
-			auto package = queue.Pop().value();
+			auto package = queue.Pop();
 			auto message = std::string(begin(package.buffer), end(package.buffer));
 			givenMessages.push_back(message);
 		}
@@ -304,7 +304,9 @@ namespace NetworkServerTest {
 
 		client.Send("OPTIONS rtsp ://10.0.0.6:554 RTSP/1.0\r\nCSeq: 2\r\nUser-Agent: LibVLC/3.0.8 (LIVE555 Streaming Media v2016.11.28)\r\n\r\n");
 
-		auto givenMessage = client.Receive();
+		std::string givenMessage;
+
+		givenMessage = client.Receive();
 
 		messageProcessor.Stop();
 		server.StopServer();

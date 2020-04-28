@@ -135,15 +135,21 @@ void NetworkServer::Worker() {
 
 void NetworkServer::Listener(){
     while (!_finish) {
-        auto message = _outputqueue.Pop();
-        if (!message) _finish = true;
+        TCPResponseNetworkPackage message;
+        try {
+            message = _outputqueue.Pop();
+        }
+        catch (const std::logic_error&) {
+            _finish = true;
+        }
+        
         if (_finish) break;
 
         std::shared_ptr<SocketOverlappedContext> Ctx = std::make_shared<SocketOverlappedContext>();
         Ctx->ResetBuffer();
-        std::copy(message.value().buffer.begin(), message.value().buffer.end(), Ctx->Buffer.buf);
-        Ctx->Buffer.len = message.value().buffer.size();
-        Ctx->AcceptSocket = message.value().socket;
+        std::copy(message.buffer.begin(), message.buffer.end(), Ctx->Buffer.buf);
+        Ctx->Buffer.len = message.buffer.size();
+        Ctx->AcceptSocket = message.socket;
         Ctx->State = OIOMode::Send;
         _listenerCtxs.push_back(Ctx);
         int iresult = WSASend(Ctx->AcceptSocket,  &Ctx->Buffer, 1, &Ctx->ReceivedBytes, Ctx->Flags, Ctx.get(), NULL);

@@ -23,7 +23,7 @@ namespace RTSPMessageProcessorTest {
 
         auto& outputqueue = Singleton<BlockingQueue<TCPResponseNetworkPackage>>();
 
-        auto response = outputqueue.Pop().value();
+        auto response = outputqueue.Pop();
 
         std::string responseMsg(begin(response.buffer), end(response.buffer));
 

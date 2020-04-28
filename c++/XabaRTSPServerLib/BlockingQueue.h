@@ -3,6 +3,7 @@
 #include <mutex>
 #include <queue>
 #include <optional>
+#include <exception>
 template <typename VALUE_TYPE>
 class BlockingQueue {
     std::queue<VALUE_TYPE> _queue;
@@ -12,7 +13,7 @@ class BlockingQueue {
 
 public:
     void Push(VALUE_TYPE&& value);
-    std::optional<VALUE_TYPE> Pop();
+    VALUE_TYPE Pop();
 
     void Terminate();
 
@@ -35,14 +36,14 @@ void BlockingQueue<VALUE_TYPE>::Push(VALUE_TYPE&& value)
 }
 
 template <typename VALUE_TYPE>
-std::optional<VALUE_TYPE> BlockingQueue<VALUE_TYPE>::Pop()
+VALUE_TYPE BlockingQueue<VALUE_TYPE>::Pop()
 {
     std::unique_lock<std::mutex> lock(_mtx);
     _cv.wait(lock, [this] { return (!_queue.empty() || _terminated); });
 
     if (_terminated)
     {
-        return std::nullopt;
+        throw std::logic_error("Queue terminated");
     }
 
     VALUE_TYPE result = std::move(_queue.front());

@@ -7,11 +7,16 @@ void MessageProcessor::Worker(){
    
     while (!_finished) {
         std::vector<std::future<void>> asyncResult; 
-        auto pckg = _queue.Pop();
-        if (!pckg) _finished = true;
+        TCPArrivedNetworkPackage pckg;
+        try {
+            pckg = _queue.Pop();
+        }
+        catch (const std::logic_error&) {
+            _finished = true;
+        }
         if (_finished) continue;
         for(auto[id,  func] : _subscribers){
-            asyncResult.push_back( std::async(std::launch::async, func, pckg.value()));
+            asyncResult.push_back( std::async(std::launch::async, func, pckg));
         }
 
         for (auto& futResult : asyncResult) { /// other thread gets the next package
