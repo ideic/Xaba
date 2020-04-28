@@ -10,11 +10,11 @@ class TCPArrivedNetworkPackage {
 private:
     sockaddr_in _src;
     std::string _srcIp;
-    uint16_t _srcPort;
+    uint16_t _srcPort{};
 
     sockaddr_in _dst;
     std::string _dstIp;
-    uint16_t _dstPort;
+    uint16_t _dstPort{};
 
 public:
         std::vector<char> buffer;

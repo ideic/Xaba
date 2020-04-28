@@ -1,6 +1,6 @@
 #pragma once
 #include <Network\NetworkPackage.h>
-#include  <fstream>;
+#include  <fstream>
 class PcapWriter {
 private:
     std::ofstream pcapFile;
