@@ -8,18 +8,18 @@
 #include "NetworkUtility.h"
 class TCPArrivedNetworkPackage {
 private:
-    sockaddr_in _src;
+    sockaddr_in _src{};
     std::string _srcIp;
     uint16_t _srcPort{};
 
-    sockaddr_in _dst;
+    sockaddr_in _dst{};
     std::string _dstIp;
     uint16_t _dstPort{};
 
 public:
         std::vector<char> buffer;
         std::chrono::time_point<std::chrono::system_clock> rxTimeSec;
-        SOCKET socket;
+        SOCKET socket{};
         void SetSrc(const sockaddr_in &sourceIp) {
             _src = sourceIp;
             auto [ip, port] = NetworkUtility::FromInAddrToStringIpPort(sourceIp);

@@ -21,7 +21,7 @@ public:
 	const std::string& URL();
 	const std::string& Version();
 
-	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage &networkPackage) = 0;
+	virtual void Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage &networkPackage) = 0;
 
 };
 
@@ -29,7 +29,7 @@ class RTSPMessageOPTIONS: public RTSPMessageType {
 private:
 	virtual const std::string Token()  override;
 	virtual void ParseCore(std::string_view message) override;
-	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage &networkPackage) override;
+	virtual void Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage &networkPackage) override;
 public:
 
 };
@@ -39,7 +39,7 @@ class RTSPMessageSETUP : public RTSPMessageType {
 protected:
 	virtual void ParseCore(std::string_view message) override;
 	virtual const std::string Token()  override ;
-	virtual std::unique_ptr<RTSPStateMachine> Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage) override;
+	virtual void Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage) override;
 public:
 	struct SetupTransport {
 		std::string Raw;
@@ -75,6 +75,7 @@ class RTSPMessageSET_PARAMETER : public RTSPMessageType {
 };
 
 class RTSPMessageINVALID : public RTSPMessageType {
+	virtual void Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage) override;
 };
 
 //f an RTSP agent does not support a particular method, it MUST return 501 (Not Implemented) and t

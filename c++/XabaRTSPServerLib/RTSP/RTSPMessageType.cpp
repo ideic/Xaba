@@ -78,8 +78,8 @@ void RTSPMessageOPTIONS::ParseCore(std::string_view message){
 	
 }
 
-std::unique_ptr<RTSPStateMachine> RTSPMessageOPTIONS::Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage){
-	return stateMachine->Option(*this, networkPackage);
+void RTSPMessageOPTIONS::Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage){
+	stateMachine->Option(*this, networkPackage);
 }
 
 void RTSPMessageSETUP::ParseCore(std::string_view message){
@@ -119,10 +119,14 @@ void RTSPMessageSETUP::ParseCore(std::string_view message){
 
 const std::string RTSPMessageSETUP::Token() { return "SETUP"s; }
 
-std::unique_ptr<RTSPStateMachine> RTSPMessageSETUP::Visit(std::unique_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage){
-	return stateMachine->SetUp(*this, networkPackage);
+void RTSPMessageSETUP::Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage){
+	stateMachine->SetUp(*this, networkPackage);
 }
 
 RTSPMessageSETUP::SetupTransport RTSPMessageSETUP::Transport(){
 	return _transport;
+}
+
+void RTSPMessageINVALID::Visit(std::shared_ptr<RTSPStateMachine> stateMachine, const TCPArrivedNetworkPackage& networkPackage){
+	stateMachine->Invalid(*this, networkPackage);
 }

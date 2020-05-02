@@ -1,40 +1,30 @@
 #include "pch.h"
 #include "RTSPStateMachine.h"
-#include "Network/NetworkPackage.h"
-#include "Singleton.h"
-#include "BlockingQueue.h"
+#include "RTSPState.h"
 
-std::unique_ptr<RTSPStateMachine> RTSPInitStateMachine::Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage){
-	auto origmsg = msg;
-	std::string response = origmsg.Version();
-	response += " 200 OK\r\n";
-	response += "CSeq:" + std::to_string(_ctx.Seq++) + "\r\n";
-	response += "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n";
-
-	TCPResponseNetworkPackage responsePckg;
-
-	responsePckg.buffer = std::vector<char>(response.begin(), response.end());
-	responsePckg.SetDst(networkPackage.GetSrc());
-	responsePckg.SetSrc(networkPackage.GetDst());
-	responsePckg.socket = networkPackage.socket;
-
-	Singleton<BlockingQueue<TCPResponseNetworkPackage>>().Push(std::move(responsePckg));
-	//return std::make_unique<RTSPInitStateMachine>(this);
-	std::unique_ptr<RTSPInitStateMachine> result = std::make_unique<RTSPInitStateMachine>();
-	result->CaptureCtx(_ctx);
-	return result;
+RTSPStateMachine::RTSPStateMachine(): _state(new RTSPInitState(&(*this))){
 }
 
-std::unique_ptr<RTSPStateMachine> RTSPInitStateMachine::SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage)
-{
-	return std::unique_ptr<RTSPStateMachine>();
+std::shared_ptr<RTSPState> RTSPStateMachine::State() {
+	return _state;
+}
+void RTSPStateMachine::ChangeState(const std::shared_ptr<RTSPState>& newState) {
+	_state = newState;
+}
+void RTSPStateMachine::Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage) {
+	_state->Option(msg, networkPackage);
+}
+void RTSPStateMachine::SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage) {
+	_state->SetUp(msg, networkPackage);
+}
+void RTSPStateMachine::Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage) {
+	_state->Play(msg, networkPackage);
 }
 
-std::unique_ptr<RTSPStateMachine> RTSPInitStateMachine::Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage)
-{
-	return std::unique_ptr<RTSPStateMachine>();
+void RTSPStateMachine::Invalid(const RTSPMessageINVALID& msg, const TCPArrivedNetworkPackage& networkPackage) {
+	_state->Invalid(msg, networkPackage);
 }
 
-void RTSPStateMachine::CaptureCtx(RTSPStateMachineContext &ctx){
-	_ctx = std::move(ctx);
+bool RTSPStateMachine::IsInFinalState() {
+	return typeid(*_state.get()).hash_code() == typeid(RTSPFinished).hash_code(); 
 }

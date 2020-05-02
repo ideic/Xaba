@@ -1,34 +1,29 @@
 #pragma once
 #include "RTSPMessageType.h"
 
-//TODO Context should containnstateMachine, that will be overwritten at ChangeState
-struct RTSPStateMachineContext {
+class RTSPState;
+
+class RTSPStateMachineContext {
+public:
 	uint32_t Seq{ 0 };
 };
-class RTSPStateMachine{
-protected:
-	RTSPStateMachineContext _ctx;
+
+class RTSPStateMachine {
+private:
+	RTSPStateMachineContext _ctx{};
+	std::shared_ptr<RTSPState> _state;
 public:
-	virtual std::unique_ptr<RTSPStateMachine> Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage) = 0;
-	virtual std::unique_ptr<RTSPStateMachine>  SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage) = 0;
-	virtual std::unique_ptr<RTSPStateMachine>  Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage) = 0;
-	void CaptureCtx(RTSPStateMachineContext &ctx);
-};
+	RTSPStateMachine();
+	RTSPStateMachineContext* Context() { return &_ctx; };
+	std::shared_ptr<RTSPState> State();
 
-class RTSPInitStateMachine : public RTSPStateMachine {
-	virtual std::unique_ptr<RTSPStateMachine> Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage) override;
-	virtual std::unique_ptr<RTSPStateMachine>  SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage) override;
-	virtual std::unique_ptr<RTSPStateMachine>  Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage) override;
-};
+	void ChangeState(const std::shared_ptr<RTSPState>& newState);
 
-class RTSPPlayingStateMachine : public RTSPStateMachine {
+	void Option(const RTSPMessageOPTIONS& msg, const TCPArrivedNetworkPackage& networkPackage);
+	void SetUp(const RTSPMessageSETUP& msg, const TCPArrivedNetworkPackage& networkPackage);
+	void Play(const RTSPMessagePLAY& msg, const TCPArrivedNetworkPackage& networkPackage);
 
-};
+	void Invalid(const RTSPMessageINVALID& msg, const TCPArrivedNetworkPackage& networkPackage);
 
-class RTSPPausedStateMachine : public RTSPStateMachine {
-
-};
-
-class RTSPFinishedStateMachine : public RTSPStateMachine {
-
+	bool IsInFinalState();
 };

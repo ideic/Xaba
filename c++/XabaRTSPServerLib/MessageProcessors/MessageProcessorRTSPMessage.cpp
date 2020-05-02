@@ -5,23 +5,23 @@
 #include <variant>
 #include <atomic>
 #include  <typeinfo>
-void MessageProcessorRTSPMessage::CreateStateMachineIfItIsNotExists(const uint64_t key){
-
-	std::atomic_bool found{ false };
+std::shared_ptr<RTSPStateMachine>  MessageProcessorRTSPMessage::GetStateMachineForced(const uint64_t key){
+	
 	{
 		std::shared_lock l(_readerWriterLock);
-		found = _stateMachines.find(key) != end(_stateMachines);
+		
+		if (_stateMachines.find(key) != end(_stateMachines)) {
+			return _stateMachines[key];
+		}
+		
 	}
-	if (!found) {
-		std::unique_lock l(_readerWriterLock);
-		_stateMachines.emplace(key, new RTSPInitStateMachine());
-	}
+	std::unique_lock l(_readerWriterLock);
+	auto result = std::make_shared<RTSPStateMachine>();
+	_stateMachines.emplace(key, result);
+
+	return result;
 }
 
-std::unique_ptr<RTSPStateMachine> MessageProcessorRTSPMessage::GetStateMachine(const uint64_t key){
-	std::shared_lock l(_readerWriterLock);
-	return std::move(_stateMachines[key]);
-}
 
 uint64_t MessageProcessorRTSPMessage::GetKey(const TCPArrivedNetworkPackage& pckg){
 	uint64_t key{ 0 };
@@ -47,24 +47,13 @@ void MessageProcessorRTSPMessage::ProcessNetworkPackage(const TCPArrivedNetworkP
 	std::string message(begin(pckg.buffer), end(pckg.buffer));
 	auto rtspMessage = parser.Parse(message);
 
-	if (typeid(*rtspMessage.get()).hash_code() == typeid(RTSPMessageINVALID).hash_code()) {
-		return;
-	}
 	auto key = GetKey(pckg);
 
-	if (typeid(*rtspMessage.get()).hash_code() == typeid(RTSPMessageOPTIONS).hash_code()) {
-		CreateStateMachineIfItIsNotExists(key);
-	}
-	
-	auto stateMachine = GetStateMachine(key);
-	if (stateMachine == nullptr) return;
+	auto stateMachine = GetStateMachineForced(key);
 
-	{
-		std::unique_lock l(_readerWriterLock);
-		_stateMachines[key] = rtspMessage->Visit(std::move(stateMachine), pckg);
-	}
+	rtspMessage->Visit(stateMachine, pckg);
 	
-	if (typeid(*rtspMessage.get()).hash_code() == typeid(RTSPMessageTEARDOWN).hash_code()) {
+	if (stateMachine->IsInFinalState()) {
 		RemoveStateMachine(key);
 	}
 }

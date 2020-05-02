@@ -6,9 +6,8 @@
 class MessageProcessorRTSPMessage{
 private:
 	std::shared_mutex _readerWriterLock{};
-	std::map<uint64_t, std::unique_ptr<RTSPStateMachine>> _stateMachines;
-	void CreateStateMachineIfItIsNotExists(const uint64_t key);
-	std::unique_ptr<RTSPStateMachine> GetStateMachine(const uint64_t key);
+	std::map<uint64_t, std::shared_ptr<RTSPStateMachine>> _stateMachines;
+	std::shared_ptr<RTSPStateMachine>  GetStateMachineForced(const uint64_t key);
 	uint64_t GetKey(const TCPArrivedNetworkPackage& pckg);
 	void RemoveStateMachine(uint64_t key);
 public:
