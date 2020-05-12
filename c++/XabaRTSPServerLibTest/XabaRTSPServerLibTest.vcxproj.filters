@@ -22,9 +22,6 @@
     <ClCompile Include="NetworkServerTest.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkTestClient.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="RTSP\RTSPMessageParserTest.cpp">
       <Filter>RTSP</Filter>
     </ClCompile>
@@ -41,9 +38,6 @@
       <Filter>Logger</Filter>
     </ClInclude>
     <ClInclude Include="..\XabaRTSPServerLib\MessageProcessors\PcapWriter.h" />
-    <ClInclude Include="NetworkTestClient.h">
-      <Filter>Network</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

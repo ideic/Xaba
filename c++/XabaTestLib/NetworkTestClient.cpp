@@ -1,8 +1,9 @@
-#include "pch.h"
+#include <pch.h>
 #include "NetworkTestClient.h"
 #include "ws2tcpip.h"
 #include <thread>
-#include <Logger\LoggerFactory.h>
+#include <stdexcept>
+
 using namespace std::chrono_literals;
 
 void NetworkTestClient::Init(std::string host, std::string portNumber){
@@ -25,7 +26,6 @@ void NetworkTestClient::Init(std::string host, std::string portNumber){
 
 	std::shared_ptr<addrinfo> addrInfo(addrInfoInit, freeaddrinfo);
 
-	WSABUF callerData, calleeData;
 	iResult = WSAConnect(_socket, addrInfoInit->ai_addr, sizeof(SOCKADDR_IN), NULL, NULL, NULL, NULL);
 	if (iResult != 0) {
 		iResult = WSAGetLastError();
@@ -47,7 +47,6 @@ void NetworkTestClient::Send(std::string content){
 	}
 
 	if (sent != buffer.len) {
-		LOGGER->LogInfo("Tcp Client sent failed");
 		std::this_thread::sleep_for(100ms);
 		Send(content);
 	}
